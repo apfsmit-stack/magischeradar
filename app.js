@@ -1,6 +1,6 @@
 'use strict';
 const KEY='magischeradar-v1';
-const defaults={theme:'sint',distance:'buurt',date:'',message:'',postcode:'',pin:'2468'};
+const defaults={theme:'sint',distance:'buurt',date:'',message:'',postcode:'',city:'',pin:'2468'};
 let settings={...defaults};
 try{const stored=JSON.parse(localStorage.getItem(KEY));if(stored&&typeof stored==='object')settings={...defaults,...stored}}catch{}
 const $=id=>document.getElementById(id);
@@ -11,9 +11,9 @@ function updateCountdown(){const el=$('countdown');if(!settings.date){el.textCon
 $('scan').addEventListener('click',()=>{const radar=$('radar');radar.animate([{filter:'brightness(1)'},{filter:'brightness(1.6)'},{filter:'brightness(1)'}],{duration:1100});$('scan').textContent='✨ Signaal gevonden!';setTimeout(()=>$('scan').textContent='📡 Scan opnieuw',1500)});
 $('openParent').addEventListener('click',()=>{$('pinInput').value='';$('authError').textContent='';$('authDialog').showModal()});
 $('cancelAuth').addEventListener('click',()=>$('authDialog').close());
-$('authForm').addEventListener('submit',e=>{e.preventDefault();if($('pinInput').value!==String(settings.pin)){$('authError').textContent='Deze code klopt niet.';return}$('authDialog').close();$('parentTheme').value=settings.theme;$('parentDistance').value=settings.distance;$('parentDate').value=settings.date;$('parentPostcode').value=settings.postcode||'';$('parentMessage').value=settings.message;$('parentPin').value='';$('parentDialog').showModal()});
+$('authForm').addEventListener('submit',e=>{e.preventDefault();if($('pinInput').value!==String(settings.pin)){$('authError').textContent='Deze code klopt niet.';return}$('authDialog').close();$('parentTheme').value=settings.theme;$('parentDistance').value=settings.distance;$('parentDate').value=settings.date;$('parentPostcode').value=settings.postcode||'';$('parentCity').value=settings.city||'';$('parentMessage').value=settings.message;$('parentPin').value='';$('parentDialog').showModal()});
 $('closeParent').addEventListener('click',()=>$('parentDialog').close());
-$('saveParent').addEventListener('click',()=>{const pin=$('parentPin').value.trim();if(pin&&(!/^\d{4,12}$/.test(pin))){alert('Gebruik 4 tot 12 cijfers voor de oudercode.');return}settings={...settings,theme:$('parentTheme').value,distance:$('parentDistance').value,date:$('parentDate').value,postcode:$('parentPostcode').value.replace(/\s/g,'').toUpperCase(),message:$('parentMessage').value.trim(),pin:pin||settings.pin};try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{alert('Opslaan op dit apparaat is niet gelukt. Controleer de browserinstellingen.')}render();$('parentDialog').close()});
+$('saveParent').addEventListener('click',()=>{const pin=$('parentPin').value.trim();if(pin&&(!/^\d{4,12}$/.test(pin))){alert('Gebruik 4 tot 12 cijfers voor de oudercode.');return}settings={...settings,theme:$('parentTheme').value,distance:$('parentDistance').value,date:$('parentDate').value,postcode:$('parentPostcode').value.replace(/\s/g,'').toUpperCase(),city:$('parentCity').value.trim().slice(0,55),message:$('parentMessage').value.trim(),pin:pin||settings.pin};try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{alert('Opslaan op dit apparaat is niet gelukt. Controleer de browserinstellingen.')}render();$('parentDialog').close()});
 render();setInterval(()=>{updateCountdown();updateMap()},1000);
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
@@ -50,20 +50,77 @@ function postcodePoint(code){
  if(n>=93&&n<=99)return [1210,140]; // Groningen
  return null;
 }
+// Reissteden en posities zijn afgestemd op de geïllustreerde kaart van 1536 x 1024.
+// De reis is fictief en gebruikt geen locatiegegevens van het apparaat.
+const routeCities={
+ Groningen:[1230,146],Leeuwarden:[970,204],Zwolle:[1055,332],
+ Amsterdam:[650,388],Utrecht:[770,518],Arnhem:[1030,562],
+ Rotterdam:[570,620],'Den Haag':[435,505],Eindhoven:[805,756],Maastricht:[980,874]
+};
+const cityAliases={'s-gravenhage':'Den Haag','den haag':'Den Haag','the hague':'Den Haag'};
+function cityKey(name){const key=String(name||'').trim().toLowerCase();return cityAliases[key]||Object.keys(routeCities).find(n=>n.toLowerCase()===key)||null}
+function getDestination(){
+ const point=postcodePoint(settings.postcode);
+ const named=cityKey(settings.city);
+ // Handmatig gekozen woonplaats mag de globale postcodepositie verfijnen.
+ return {point:named?routeCities[named]:(point||[790,525]),name:settings.city.trim(),hasPostcode:!!point};
+}
+function getRoute(destination){
+ const [x,y]=destination;
+ // Een logische fantasieroute langs herkenbare steden, passend bij de regio.
+ let names;
+ if(y<290)names=['Groningen','Leeuwarden'];
+ else if(x<570)names=['Groningen','Zwolle','Amsterdam','Den Haag'];
+ else if(x<770)names=['Groningen','Zwolle','Amsterdam','Utrecht'];
+ else if(y>700)names=['Groningen','Zwolle','Utrecht','Eindhoven'];
+ else if(x>970)names=['Groningen','Zwolle','Arnhem'];
+ else names=['Groningen','Zwolle','Utrecht'];
+ // De laatste halte ligt altijd bij de woonplaats. Voorkom dubbele eindhaltes.
+ names=names.filter(n=>Math.hypot(routeCities[n][0]-x,routeCities[n][1]-y)>45);
+ return [{name:'Vertrek',xy:[1270,95]},...names.map(name=>({name,xy:routeCities[name]})),{name:'Thuis',xy:destination}];
+}
+function interpolate(a,b,t){const smooth=t*t*(3-2*t);return [a[0]+(b[0]-a[0])*smooth,a[1]+(b[1]-a[1])*smooth]}
 function updateMap(){
- const point=postcodePoint(settings.postcode),dest=point||[790,525],start=[650,90];
- const end=settings.date?new Date(settings.date).getTime():NaN,now=Date.now(),duration=7*86400000;
+ const dest=getDestination(),route=getRoute(dest.point),end=settings.date?new Date(settings.date).getTime():NaN;
+ const duration=7*86400000,now=Date.now();
  const progress=Number.isFinite(end)?Math.max(0,Math.min(1,(now-(end-duration))/duration)):.28;
- const ease=progress*progress*(3-2*progress);
- const x=start[0]+(dest[0]-start[0])*ease,y=start[1]+(dest[1]-start[1])*ease;
+ const n=route.length-1,scaled=progress*n,segment=Math.min(n-1,Math.floor(scaled)),part=Math.max(0,Math.min(1,scaled-segment));
+ const [x,y]=interpolate(route[segment].xy,route[segment+1].xy,part);
  const t=themes[settings.theme]||themes.sint;
- $('traveler').textContent=t.icon;
- $('traveler').setAttribute('x',x);$('traveler').setAttribute('y',y-15);
- $('homeMarker').setAttribute('x',dest[0]);$('homeMarker').setAttribute('y',dest[1]+20);
- $('homeHalo').setAttribute('cx',dest[0]);$('homeHalo').setAttribute('cy',dest[1]);
- $('homeRing').setAttribute('cx',dest[0]);$('homeRing').setAttribute('cy',dest[1]);
- const controlX=(start[0]+dest[0])/2-110,controlY=(start[1]+dest[1])/2-85;
- const trail=`M ${start[0]} ${start[1]} Q ${controlX} ${controlY} ${x} ${y}`;
+ $('traveler').textContent=t.icon;$('traveler').setAttribute('x',x);$('traveler').setAttribute('y',y-17);
+ const [dx,dy]=dest.point;
+ $('homeMarker').setAttribute('x',dx);$('homeMarker').setAttribute('y',dy+20);
+ $('homeHalo').setAttribute('cx',dx);$('homeHalo').setAttribute('cy',dy);
+ $('homeRing').setAttribute('cx',dx);$('homeRing').setAttribute('cy',dy);
+ // Route langs alle reeds bezochte tussenstops, met een gedeeltelijke laatste etappe.
+ const visited=route.slice(0,segment+1).map(r=>r.xy);visited.push([x,y]);
+ const trail=visited.map((p,i)=>(i?'L ':'M ')+p[0]+' '+p[1]).join(' ');
  $('travelTrail').setAttribute('d',trail);$('travelTrailGlow').setAttribute('d',trail);
- $('mapNote').textContent=!point?'Vul in het ouderportaal een postcode in om de reis naar jouw regio te zien':!Number.isFinite(end)?'Stel een aankomsttijd in om de reis automatisch te laten verlopen':progress>=1?'✨ Het magische bezoek is aangekomen!':`✨ ${t.who} ${progress>.85?'is bijna in jouw buurt!':'is onderweg naar jouw regio!'}`;
+ const stop=progress>=1?'Thuis':route[segment].name;
+ const next=route[segment+1].name;
+ const note=$('mapNote'),event=$('cityEvent');
+ const homeName=dest.name||'jouw regio';
+ $('homeCity').textContent=dest.name|| (dest.hasPostcode?'Jouw regio':'Bestemming');
+ $('homeCity').setAttribute('x',Math.max(110,Math.min(1420,dx)));
+ $('homeCity').setAttribute('y',dy+94);
+ if(!dest.hasPostcode&&!dest.name){
+   note.textContent='Vul een postcode en woonplaats in bij het ouderportaal.';
+   event.textContent='✨ Een magische reis door Nederland wacht op je!';
+ }else if(!Number.isFinite(end)){
+   note.textContent='Stel een aankomstdatum en tijd in om de reis te starten.';
+   event.textContent=`🏡 De bestemming is ${homeName}.`;
+ }else if(progress>=1){
+   note.textContent=`✨ ${t.who} is aangekomen in ${homeName}!`;
+   event.textContent='🎉 Het magische moment is aangebroken!';
+ }else{
+   const visitedCity=stop==='Vertrek'?'Groningen':stop;
+   note.textContent=`📍 ${t.who} reist richting ${homeName}`;
+   event.textContent=progress<.03?`✨ ${t.who} begint aan de reis!`:
+    `${t.icon} ${t.who} ${part<.22?'is gesignaleerd in '+visitedCity:'reist van '+visitedCity+' naar '+(next==='Thuis'?homeName:next)}!`;
+ }
+ const stops=$('routeStops');stops.replaceChildren();
+ for(let i=1;i<route.length-1;i++){
+   const item=document.createElement('span');item.className='route-stop'+(progress*n>=i?' passed':'');
+   item.textContent=(progress*n>=i?'✓ ':'○ ')+route[i].name;stops.append(item);
+ }
 }

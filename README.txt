@@ -10,3 +10,5 @@ De eerste twee cijfers van de postcode worden uitsluitend lokaal vertaald naar e
 De figuur beweegt vanaf zeven dagen voor de ingestelde datum en tijd naar die regio.
 De kaart is illustratief: stadslabels en regioposities zijn niet cartografisch nauwkeurig.
 Instellingen worden opgeslagen in de browser en zijn niet tussen apparaten gesynchroniseerd.
+
+Versie 1.4: Reis via herkenbare steden met voortgangsmeldingen. De woonplaats kan apart worden ingevoerd en verschijnt op de kaart, ook als die niet op de illustratie staat. De locatie is een benadering; geen postcode-naar-adresdienst.

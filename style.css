@@ -14,3 +14,5 @@
 @keyframes haloGlow{50%{opacity:.72;transform:scale(1.25)}}
 @media(max-width:900px){.experience{grid-template-columns:1fr}.side-experience{flex-direction:column-reverse}.map-stage svg{min-height:0;max-height:none}}
 @media(prefers-reduced-motion:reduce){#homeHalo{animation:none}}
+
+.city-event{font-size:clamp(15px,2.2vw,22px);font-weight:900;text-align:center;color:#fff2b3;padding:13px 8px 4px;text-shadow:0 0 12px #f9bb6b77}.route-stops{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:8px 0}.route-stop{border:1px solid #6e9fc7;background:#0d2c59;border-radius:99px;padding:5px 9px;color:#c6d9ec;font-size:12px}.route-stop.passed{border-color:#ffe9a2;background:#385c65;color:#fff1bc}#homeCity{filter:drop-shadow(0 1px 3px #071b40)}
