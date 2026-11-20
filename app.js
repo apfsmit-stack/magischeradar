@@ -4,12 +4,24 @@ const defaults={theme:'sint',distance:'buurt',date:'',message:'',postcode:'',cit
 let settings={...defaults};
 try{const stored=JSON.parse(localStorage.getItem(KEY));if(stored&&typeof stored==='object')settings={...defaults,...stored}}catch{}
 const $=id=>document.getElementById(id);
-const themes={sint:{name:'Sinterklaas & Pieten',icon:'🎁',who:'De Pieten'},fee:{name:'Tandenfee',icon:'🧚',who:'De tandenfee'},paas:{name:'Paashaas',icon:'🐰',who:'De paashaas'},kabouter:{name:'Kabouters',icon:'🍄',who:'De kabouters'},kerst:{name:'Kerstman',icon:'🎅',who:'De kerstman'}};
+const themes={sint:{name:'Sinterklaas & Pieten',icon:'🐎',who:'De Pieten',plural:true,travel:'Sinterklaas rijdt op Ozosnel'},fee:{name:'Tandenfee',icon:'🧚',who:'de tandenfee',plural:false},paas:{name:'Paashaas',icon:'🐰',who:'de paashaas',plural:false},kabouter:{name:'Kabouters',icon:'🍄',who:'de kabouters',plural:true},kerst:{name:'Kerstman',icon:'🎅',who:'de kerstman',plural:false}};
 const distances={ver:{label:'Nog ver weg',headline:'Er is iets magisch onderweg!',description:'De radar ziet een klein lichtpuntje in de verte.',position:[76,21]},buurt:{label:'In de buurt',headline:'Er gebeurt iets in de buurt!',description:'De magische signalen worden steeds sterker.',position:[66,33]},dichtbij:{label:'Heel dichtbij!',headline:'Wauw! Bijna hier!',description:'De radar ontvangt een heel sterk magisch signaal!',position:[55,43]}};
-function render(){updateMap();const t=themes[settings.theme]||themes.sint;const d=distances[settings.distance]||distances.buurt;document.querySelectorAll('[data-theme]').forEach(b=>{b.classList.toggle('selected',b.dataset.theme===settings.theme);b.setAttribute('aria-pressed',String(b.dataset.theme===settings.theme))});$('blip').textContent=t.icon;$('blip').style.left=d.position[0]+'%';$('blip').style.top=d.position[1]+'%';$('distance').textContent='● '+d.label;$('headline').textContent=d.headline;$('message').textContent=settings.message.trim()||`${t.who}: ${d.description}`;updateCountdown()}
+function sentenceWho(t){return t.who.charAt(0).toUpperCase()+t.who.slice(1)}
+function verb(t,singular,plural){return t.plural?plural:singular}
+function themeIcon(t){return t.icon}
+function render(){updateMap();const t=themes[settings.theme]||themes.sint;const d=distances[settings.distance]||distances.buurt;document.querySelectorAll('[data-theme]').forEach(b=>{b.classList.toggle('selected',b.dataset.theme===settings.theme);b.setAttribute('aria-pressed',String(b.dataset.theme===settings.theme))});$('blip').innerHTML='<img src="figuur-'+settings.theme+'.png" alt="">';$('blip').style.left=d.position[0]+'%';$('blip').style.top=d.position[1]+'%';$('distance').textContent='● '+d.label;$('headline').textContent=d.headline;$('message').textContent=settings.message.trim()||`${sentenceWho(t)}: ${d.description}`;updateCountdown()}
 document.querySelectorAll('[data-theme]').forEach(button=>button.addEventListener('click',()=>{settings.theme=button.dataset.theme;try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{}render()}));
-function updateCountdown(){const el=$('countdown');if(!settings.date){el.textContent='✨ Een magisch avontuur wacht op je';return}const ms=new Date(settings.date).getTime()-Date.now();if(!Number.isFinite(ms)){el.textContent='';return}if(ms<=0){el.textContent='✨ Het magische moment is aangebroken!';return}const days=Math.floor(ms/86400000),hours=Math.floor(ms%86400000/3600000),minutes=Math.floor(ms%3600000/60000),seconds=Math.floor(ms%60000/1000);el.textContent=`${days} dagen · ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`}
-$('scan').addEventListener('click',()=>{const radar=$('radar');radar.animate([{filter:'brightness(1)'},{filter:'brightness(1.6)'},{filter:'brightness(1)'}],{duration:1100});$('scan').textContent='✨ Signaal gevonden!';setTimeout(()=>$('scan').textContent='📡 Scan opnieuw',1500)});
+function updateCountdown(){
+ const el=$('countdown');
+ if(!settings.date){el.textContent='✨ Stel een magisch moment in';return}
+ const ms=new Date(settings.date).getTime()-Date.now();
+ if(!Number.isFinite(ms)){el.textContent='';return}
+ if(ms<=0){el.textContent='✨ Het magische moment is aangebroken!';return}
+ const days=Math.floor(ms/86400000),hours=Math.floor(ms%86400000/3600000),minutes=Math.floor(ms%3600000/60000),seconds=Math.floor(ms%60000/1000);
+ const parts=[['Dagen',days],['Uren',hours],['Minuten',minutes],['Seconden',seconds]];
+ el.replaceChildren(...parts.map(([label,value])=>{const box=document.createElement('span');box.className='time-unit';const number=document.createElement('strong');number.textContent=String(value).padStart(2,'0');const caption=document.createElement('small');caption.textContent=label;box.append(number,caption);return box}));
+}
+$('scan').addEventListener('click',()=>{const radar=$('radar');radar.animate([{filter:'brightness(1)'},{filter:'brightness(1.6)'},{filter:'brightness(1)'}],{duration:1100});$('scan').textContent='✨ Signaal gevonden!';setTimeout(()=>$('scan').textContent='📡 Zoek opnieuw naar signalen',1500)});
 $('openParent').addEventListener('click',()=>{$('pinInput').value='';$('authError').textContent='';$('authDialog').showModal()});
 $('cancelAuth').addEventListener('click',()=>$('authDialog').close());
 $('authForm').addEventListener('submit',e=>{e.preventDefault();if($('pinInput').value!==String(settings.pin)){$('authError').textContent='Deze code klopt niet.';return}$('authDialog').close();$('parentTheme').value=settings.theme;$('parentDistance').value=settings.distance;$('parentDate').value=settings.date;$('parentPostcode').value=settings.postcode||'';$('parentCity').value=settings.city||'';$('parentMessage').value=settings.message;$('parentPin').value='';$('parentDialog').showModal()});
@@ -90,7 +102,7 @@ function updateMap(){
  $('progressBar').style.width=Math.round(progress*100)+'%';const n=route.length-1,scaled=progress*n,segment=Math.min(n-1,Math.floor(scaled)),part=Math.max(0,Math.min(1,scaled-segment));
  const [x,y]=interpolate(route[segment].xy,route[segment+1].xy,part);
  const t=themes[settings.theme]||themes.sint;
- $('traveler').textContent=t.icon;$('traveler').setAttribute('x',x);$('traveler').setAttribute('y',y-17);
+ $('traveler').setAttribute('href','figuur-'+settings.theme+'.png');$('traveler').setAttribute('x',x-49);$('traveler').setAttribute('y',y-70);$('heroFigure').src='figuur-'+settings.theme+'.png';$('heroFigure').alt=t.name;
  const [dx,dy]=dest.point;
  $('homeMarker').setAttribute('x',dx);$('homeMarker').setAttribute('y',dy+20);
  $('homeHalo').setAttribute('cx',dx);$('homeHalo').setAttribute('cy',dy);
@@ -102,10 +114,12 @@ function updateMap(){
  const stop=progress>=1?'Thuis':route[segment].name;
  const next=route[segment+1].name;
  const note=$('mapNote'),event=$('cityEvent');
- const homeName=dest.name||'jouw regio';$('bannerText').textContent=Number.isFinite(end)?`${t.who} komt steeds dichter bij ${homeName}!`:'Een magische reis door Nederland wacht op je!';
+ const homeName=dest.name||'jouw regio';$('bannerText').textContent=Number.isFinite(end)?`${sentenceWho(t)} ${verb(t,'komt','komen')} steeds dichter bij ${homeName}!`:'Een magische reis door Nederland wacht op je!';
  $('homeCity').textContent=dest.name|| (dest.hasPostcode?'Jouw regio':'Bestemming');
- $('homeCity').setAttribute('x',Math.max(110,Math.min(1420,dx)));
- $('homeCity').setAttribute('y',dy+94);
+ const labelX=dx>1120?dx-75:dx+78;const labelY=dy<290?dy+95:dy>770?dy-68:dy+93;
+ $('homeCity').setAttribute('x',Math.max(105,Math.min(1420,labelX)));
+ $('homeCity').setAttribute('y',labelY);
+ $('homeCity').setAttribute('font-size',dest.name.length>16?'26':'34');
  if(!dest.hasPostcode&&!dest.name){
    note.textContent='Vul een postcode en woonplaats in bij het ouderportaal.';
    event.textContent='✨ Een magische reis door Nederland wacht op je!';
@@ -113,13 +127,13 @@ function updateMap(){
    note.textContent='Stel een aankomstdatum en tijd in om de reis te starten.';
    event.textContent=`🏡 De bestemming is ${homeName}.`;
  }else if(progress>=1){
-   note.textContent=`✨ ${t.who} is aangekomen in ${homeName}!`;
+   note.textContent=`✨ ${sentenceWho(t)} ${verb(t,'is','zijn')} aangekomen in ${homeName}!`;
    event.textContent='🎉 Het magische moment is aangebroken!';
  }else{
    const visitedCity=stop==='Vertrek'?'Groningen':stop;
-   note.textContent=`📍 ${t.who} reist richting ${homeName}`;
+   note.textContent=`📍 ${sentenceWho(t)} ${verb(t,'reist','reizen')} richting ${homeName}`;
    event.textContent=progress<.03?`✨ ${t.who} begint aan de reis!`:
-    `${t.icon} ${t.who} ${part<.22?'is gesignaleerd in '+visitedCity:'reist van '+visitedCity+' naar '+(next==='Thuis'?homeName:next)}!`;
+    `${themeIcon(t)} ${sentenceWho(t)} ${part<.22?(verb(t,'is','zijn')+' gesignaleerd in '+visitedCity):(verb(t,'reist','reizen')+' van '+visitedCity+' naar '+(next==='Thuis'?homeName:next))}!`;
  }
  const stops=$('routeStops');stops.replaceChildren();
  for(let i=1;i<route.length-1;i++){

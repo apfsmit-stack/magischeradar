@@ -1,16 +1,9 @@
-MagischeRadar 1.3 – Geïllustreerde Nederlandkaart
+MagischeRadar 1.7
 
-Upload alle acht bestanden in deze map naar de hoofdmap van je bestaande GitHub-repository.
-De afbeelding nederland-magisch.png is noodzakelijk en moet naast index.html staan.
+Upload ALLE bestanden uit deze map rechtstreeks naar de hoofdmap van je bestaande GitHub-repository.
+Vervang de bestaande bestanden. GitHub Pages publiceert daarna de nieuwe versie.
+Vernieuw met Ctrl+F5. Bij een oude offline versie: verwijder de websitecache/serviceworker.
 
-Ga na het uploaden naar Actions en wacht op een geslaagde Pages-deploy. Herlaad daarna met Ctrl+F5.
+Nieuw: vijf geïllustreerde figuren, Sinterklaas op een wit paard, bewegende figuren over de kaart, verbeterde teksten, ouderportaal en aftelklok.
 
-Ouderportaal: tandwiel, standaardpincode 2468. Verander de pincode na eerste gebruik.
-De eerste twee cijfers van de postcode worden uitsluitend lokaal vertaald naar een grove regiopositie.
-De figuur beweegt vanaf zeven dagen voor de ingestelde datum en tijd naar die regio.
-De kaart is illustratief: stadslabels en regioposities zijn niet cartografisch nauwkeurig.
-Instellingen worden opgeslagen in de browser en zijn niet tussen apparaten gesynchroniseerd.
-
-Versie 1.4: Reis via herkenbare steden met voortgangsmeldingen. De woonplaats kan apart worden ingevoerd en verschijnt op de kaart, ook als die niet op de illustratie staat. De locatie is een benadering; geen postcode-naar-adresdienst.
-
-Versie 1.5: vernieuwde indeling in stijl van het oorspronkelijke ontwerp, thema-keuzemenu, kaart, aankomstkaart, aftelklok.
+De route is fictief. Postcodes bepalen slechts een globale regio; er worden geen huisadressen opgevraagd.
