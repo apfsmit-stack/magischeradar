@@ -1,0 +1,18 @@
+'use strict';
+const KEY='magischeradar-v1';
+const defaults={theme:'sint',distance:'buurt',date:'',message:'',pin:'2468'};
+let settings={...defaults};
+try{const stored=JSON.parse(localStorage.getItem(KEY));if(stored&&typeof stored==='object')settings={...defaults,...stored}}catch{}
+const $=id=>document.getElementById(id);
+const themes={sint:{name:'Sinterklaas & Pieten',icon:'🎁',who:'De Pieten'},fee:{name:'Tandenfee',icon:'🧚',who:'De tandenfee'},paas:{name:'Paashaas',icon:'🐰',who:'De paashaas'},kabouter:{name:'Kabouters',icon:'🍄',who:'De kabouters'},kerst:{name:'Kerstman',icon:'🎅',who:'De kerstman'}};
+const distances={ver:{label:'Nog ver weg',headline:'Er is iets magisch onderweg!',description:'De radar ziet een klein lichtpuntje in de verte.',position:[76,21]},buurt:{label:'In de buurt',headline:'Er gebeurt iets in de buurt!',description:'De magische signalen worden steeds sterker.',position:[66,33]},dichtbij:{label:'Heel dichtbij!',headline:'Wauw! Bijna hier!',description:'De radar ontvangt een heel sterk magisch signaal!',position:[55,43]}};
+function render(){const t=themes[settings.theme]||themes.sint;const d=distances[settings.distance]||distances.buurt;$('themeLabel').textContent=t.icon+' '+t.name;$('blip').textContent=t.icon;$('blip').style.left=d.position[0]+'%';$('blip').style.top=d.position[1]+'%';$('distance').textContent='● '+d.label;$('headline').textContent=d.headline;$('message').textContent=settings.message.trim()||`${t.who}: ${d.description}`;updateCountdown()}
+function updateCountdown(){const el=$('countdown');if(!settings.date){el.textContent='✨ Een magisch avontuur wacht op je';return}const ms=new Date(settings.date).getTime()-Date.now();if(!Number.isFinite(ms)){el.textContent='';return}if(ms<=0){el.textContent='✨ Het magische moment is aangebroken!';return}const days=Math.floor(ms/86400000),hours=Math.floor(ms%86400000/3600000),minutes=Math.floor(ms%3600000/60000),seconds=Math.floor(ms%60000/1000);el.textContent=`⏳ ${days}d ${hours}u ${minutes}m ${seconds}s tot het magische moment`}
+$('scan').addEventListener('click',()=>{const radar=$('radar');radar.animate([{filter:'brightness(1)'},{filter:'brightness(1.6)'},{filter:'brightness(1)'}],{duration:1100});$('scan').textContent='✨ Signaal gevonden!';setTimeout(()=>$('scan').textContent='📡 Scan opnieuw',1500)});
+$('openParent').addEventListener('click',()=>{$('pinInput').value='';$('authError').textContent='';$('authDialog').showModal()});
+$('cancelAuth').addEventListener('click',()=>$('authDialog').close());
+$('authForm').addEventListener('submit',e=>{e.preventDefault();if($('pinInput').value!==String(settings.pin)){$('authError').textContent='Deze code klopt niet.';return}$('authDialog').close();$('parentTheme').value=settings.theme;$('parentDistance').value=settings.distance;$('parentDate').value=settings.date;$('parentMessage').value=settings.message;$('parentPin').value='';$('parentDialog').showModal()});
+$('closeParent').addEventListener('click',()=>$('parentDialog').close());
+$('saveParent').addEventListener('click',()=>{const pin=$('parentPin').value.trim();if(pin&&(!/^\d{4,12}$/.test(pin))){alert('Gebruik 4 tot 12 cijfers voor de oudercode.');return}settings={...settings,theme:$('parentTheme').value,distance:$('parentDistance').value,date:$('parentDate').value,message:$('parentMessage').value.trim(),pin:pin||settings.pin};try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{alert('Opslaan op dit apparaat is niet gelukt. Controleer de browserinstellingen.')}render();$('parentDialog').close()});
+render();setInterval(updateCountdown,1000);
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
