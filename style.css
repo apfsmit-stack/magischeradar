@@ -4,3 +4,13 @@
 
 /* Versie 1.2: grote, vrolijke landkaart als middelpunt */
 .shell{max-width:1120px}.experience{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,0.8fr);gap:20px;align-items:start}.map-wrap{margin-bottom:0;padding:16px;background:linear-gradient(145deg,#2b65b5,#0d285c);border:2px solid #67b6fa;box-shadow:0 12px 50px #0007, inset 0 0 20px #62b8ff3b}.map-stage{max-width:none;background:#0d427d;border:2px solid #7cc6e6;box-shadow:inset 0 0 30px #a5d7ff55}.map-stage svg{max-height:75vh;min-height:480px}.map-note{font-size:17px}.side-experience{display:flex;flex-direction:column;gap:15px}.status{border:1px solid #5c87ba;border-radius:24px;background:linear-gradient(155deg,#243f78,#11244c);padding:20px}.radar-wrap{background:linear-gradient(145deg,#244b89,#122750)}.theme{font-size:20px;color:#fff3bb}.eyebrow{color:#bde8ff}h1 span{color:#ffd56c}#traveler{filter:drop-shadow(0 0 8px #fff7a4)}@media(max-width:760px){.experience{grid-template-columns:1fr}.map-stage svg{min-height:0;max-height:65vh}.side-experience{display:flex;flex-direction:column-reverse}.shell{padding:15px 12px 28px}.map-wrap{padding:9px}.status{padding:18px}}
+
+/* Versie 1.3: echte geïllustreerde kaart met interactieve transparante laag */
+.shell{max-width:1500px}.experience{grid-template-columns:minmax(0,2.25fr) minmax(270px,.75fr)}
+.map-wrap{padding:9px}.map-stage{position:relative;width:100%;aspect-ratio:3/2;background:#0b4583 url('nederland-magisch.png') center/100% 100% no-repeat;border:2px solid #82cfff}
+.map-stage svg{position:absolute;inset:0;width:100%;height:100%;min-height:0;max-height:none;overflow:visible}
+#traveler,#homeMarker{paint-order:stroke;stroke:#0b285b;stroke-width:2px;filter:drop-shadow(0 0 10px #ffe98d)}
+#homeHalo{transform-box:fill-box;transform-origin:center;animation:haloGlow 2.3s ease-in-out infinite}
+@keyframes haloGlow{50%{opacity:.72;transform:scale(1.25)}}
+@media(max-width:900px){.experience{grid-template-columns:1fr}.side-experience{flex-direction:column-reverse}.map-stage svg{min-height:0;max-height:none}}
+@media(prefers-reduced-motion:reduce){#homeHalo{animation:none}}

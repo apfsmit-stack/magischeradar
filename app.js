@@ -19,5 +19,51 @@ if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serv
 
 // Privacyvriendelijke fantasiekaart: globale positie op basis van uitsluitend de eerste twee postcodecijfers.
 // Geen geocoding, geen netwerkverzoek, geen huisadres.
-function postcodePoint(code){const m=String(code||'').match(/^(\d{2})\d{2}(?:[A-Z]{2})?$/);if(!m)return null;const n=Number(m[1]);if(n>=10&&n<=12)return [130,260];if(n>=13&&n<=14)return [156,242];if(n>=15&&n<=19)return [112,226];if(n>=20&&n<=21)return [97,265];if(n>=22&&n<=25)return [99,300];if(n>=26&&n<=29)return [124,320];if(n>=30&&n<=33)return [141,345];if(n>=34&&n<=39)return [175,296];if(n>=40&&n<=42)return [180,351];if(n>=43&&n<=46)return [99,379];if(n>=47&&n<=49)return [157,381];if(n>=50&&n<=52)return [188,373];if(n>=53&&n<=59)return [231,376];if(n>=60&&n<=64)return [210,411];if(n>=65&&n<=69)return [242,335];if(n>=70&&n<=73)return [249,298];if(n>=74&&n<=77)return [237,252];if(n>=78&&n<=79)return [251,188];if(n>=80&&n<=82)return [214,236];if(n>=83&&n<=84)return [185,204];if(n>=85&&n<=89)return [123,165];if(n>=90&&n<=92)return [120,127];if(n>=93&&n<=99)return [198,117];return null}
-function updateMap(){const point=postcodePoint(settings.postcode);const dest=point||[174,310];const start=[176,75];const end=settings.date?new Date(settings.date).getTime():NaN;const now=Date.now();const duration=7*86400000;const progress=Number.isFinite(end)?Math.max(0,Math.min(1,(now-(end-duration))/duration)):.28;const ease=progress*progress*(3-2*progress);const x=start[0]+(dest[0]-start[0])*ease;const y=start[1]+(dest[1]-start[1])*ease;const t=themes[settings.theme]||themes.sint;$('traveler').textContent=t.icon;$('traveler').setAttribute('x',x);$('traveler').setAttribute('y',y);$('homeMarker').setAttribute('x',dest[0]);$('homeMarker').setAttribute('y',dest[1]+8);$('homeHalo').setAttribute('cx',dest[0]);$('homeHalo').setAttribute('cy',dest[1]);$('travelTrail').setAttribute('d',`M${start[0]} ${start[1]} Q${(start[0]+dest[0])/2+42} ${(start[1]+dest[1])/2} ${x} ${y}`);$('mapNote').textContent=!point?'Vul in het ouderportaal een postcode in om de reis naar jouw regio te zien':!Number.isFinite(end)?'Stel een aankomsttijd in om de reis automatisch te laten verlopen':progress>=1?'✨ Het magische bezoek is aangekomen!':`✨ ${t.who} ${progress>.85?'is bijna in jouw buurt!':'is onderweg naar jouw regio!'}`}
+// Posities op de geïllustreerde kaart (pixels op het originele canvas van 1536 x 1024).
+// De eerste twee postcodecijfers geven alleen een ruwe regio, geen exacte locatie.
+function postcodePoint(code){
+ const m=String(code||'').replace(/\s/g,'').match(/^(\d{2})\d{2}(?:[A-Z]{2})?$/);
+ if(!m)return null;
+ const n=Number(m[1]);
+ if(n>=10&&n<=12)return [605,392]; // Amsterdam
+ if(n>=13&&n<=14)return [790,412]; // Flevoland
+ if(n>=15&&n<=19)return [540,340]; // Noord-Holland
+ if(n>=20&&n<=21)return [490,415]; // Haarlem
+ if(n>=22&&n<=25)return [430,515]; // Den Haag
+ if(n>=26&&n<=29)return [530,570]; // Zuid-Holland
+ if(n>=30&&n<=33)return [575,630]; // Rotterdam
+ if(n>=34&&n<=39)return [785,525]; // Utrecht
+ if(n>=40&&n<=42)return [855,650]; // Rivierengebied
+ if(n>=43&&n<=46)return [250,745]; // Zeeland
+ if(n>=47&&n<=49)return [490,730]; // West-Brabant
+ if(n>=50&&n<=52)return [750,735]; // Midden-Brabant
+ if(n>=53&&n<=59)return [930,780]; // Oost-Brabant / Noord-Limburg
+ if(n>=60&&n<=64)return [1000,880]; // Limburg
+ if(n>=65&&n<=69)return [1050,570]; // Arnhem/Nijmegen
+ if(n>=70&&n<=73)return [1120,520]; // Achterhoek
+ if(n>=74&&n<=77)return [1090,380]; // Twente
+ if(n>=78&&n<=79)return [1120,290]; // Drenthe
+ if(n>=80&&n<=82)return [1030,325]; // Zwolle
+ if(n>=83&&n<=84)return [825,290]; // Friesland/Flevoland
+ if(n>=85&&n<=89)return [815,190]; // Friesland
+ if(n>=90&&n<=92)return [890,165]; // Noord-Friesland
+ if(n>=93&&n<=99)return [1210,140]; // Groningen
+ return null;
+}
+function updateMap(){
+ const point=postcodePoint(settings.postcode),dest=point||[790,525],start=[650,90];
+ const end=settings.date?new Date(settings.date).getTime():NaN,now=Date.now(),duration=7*86400000;
+ const progress=Number.isFinite(end)?Math.max(0,Math.min(1,(now-(end-duration))/duration)):.28;
+ const ease=progress*progress*(3-2*progress);
+ const x=start[0]+(dest[0]-start[0])*ease,y=start[1]+(dest[1]-start[1])*ease;
+ const t=themes[settings.theme]||themes.sint;
+ $('traveler').textContent=t.icon;
+ $('traveler').setAttribute('x',x);$('traveler').setAttribute('y',y-15);
+ $('homeMarker').setAttribute('x',dest[0]);$('homeMarker').setAttribute('y',dest[1]+20);
+ $('homeHalo').setAttribute('cx',dest[0]);$('homeHalo').setAttribute('cy',dest[1]);
+ $('homeRing').setAttribute('cx',dest[0]);$('homeRing').setAttribute('cy',dest[1]);
+ const controlX=(start[0]+dest[0])/2-110,controlY=(start[1]+dest[1])/2-85;
+ const trail=`M ${start[0]} ${start[1]} Q ${controlX} ${controlY} ${x} ${y}`;
+ $('travelTrail').setAttribute('d',trail);$('travelTrailGlow').setAttribute('d',trail);
+ $('mapNote').textContent=!point?'Vul in het ouderportaal een postcode in om de reis naar jouw regio te zien':!Number.isFinite(end)?'Stel een aankomsttijd in om de reis automatisch te laten verlopen':progress>=1?'✨ Het magische bezoek is aangekomen!':`✨ ${t.who} ${progress>.85?'is bijna in jouw buurt!':'is onderweg naar jouw regio!'}`;
+}

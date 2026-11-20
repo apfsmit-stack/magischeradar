@@ -1,7 +1,12 @@
-MagischeRadar 1.2
+MagischeRadar 1.3 – Geïllustreerde Nederlandkaart
 
-Deze versie bevat een grotere, kleurrijkere kaart van Nederland met extra decoraties, een vernieuwde indeling voor grote schermen en behoudt het bestaande ouderportaal.
+Upload alle acht bestanden in deze map naar de hoofdmap van je bestaande GitHub-repository.
+De afbeelding nederland-magisch.png is noodzakelijk en moet naast index.html staan.
 
-Upload alle bestanden naar de hoofdmap van dezelfde GitHub-repository. Wacht op de groene check bij Actions en herlaad de site met Ctrl+F5.
+Ga na het uploaden naar Actions en wacht op een geslaagde Pages-deploy. Herlaad daarna met Ctrl+F5.
 
-Let op: de kaart is een fantasiekaart. De postcode wordt uitsluitend grofweg op basis van de eerste twee cijfers bepaald.
+Ouderportaal: tandwiel, standaardpincode 2468. Verander de pincode na eerste gebruik.
+De eerste twee cijfers van de postcode worden uitsluitend lokaal vertaald naar een grove regiopositie.
+De figuur beweegt vanaf zeven dagen voor de ingestelde datum en tijd naar die regio.
+De kaart is illustratief: stadslabels en regioposities zijn niet cartografisch nauwkeurig.
+Instellingen worden opgeslagen in de browser en zijn niet tussen apparaten gesynchroniseerd.
