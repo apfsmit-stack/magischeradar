@@ -6,15 +6,16 @@ try{const stored=JSON.parse(localStorage.getItem(KEY));if(stored&&typeof stored=
 const $=id=>document.getElementById(id);
 const themes={sint:{name:'Sinterklaas & Pieten',icon:'🎁',who:'De Pieten'},fee:{name:'Tandenfee',icon:'🧚',who:'De tandenfee'},paas:{name:'Paashaas',icon:'🐰',who:'De paashaas'},kabouter:{name:'Kabouters',icon:'🍄',who:'De kabouters'},kerst:{name:'Kerstman',icon:'🎅',who:'De kerstman'}};
 const distances={ver:{label:'Nog ver weg',headline:'Er is iets magisch onderweg!',description:'De radar ziet een klein lichtpuntje in de verte.',position:[76,21]},buurt:{label:'In de buurt',headline:'Er gebeurt iets in de buurt!',description:'De magische signalen worden steeds sterker.',position:[66,33]},dichtbij:{label:'Heel dichtbij!',headline:'Wauw! Bijna hier!',description:'De radar ontvangt een heel sterk magisch signaal!',position:[55,43]}};
-function render(){updateMap();const t=themes[settings.theme]||themes.sint;const d=distances[settings.distance]||distances.buurt;$('themeLabel').textContent=t.icon+' '+t.name;$('blip').textContent=t.icon;$('blip').style.left=d.position[0]+'%';$('blip').style.top=d.position[1]+'%';$('distance').textContent='● '+d.label;$('headline').textContent=d.headline;$('message').textContent=settings.message.trim()||`${t.who}: ${d.description}`;updateCountdown()}
-function updateCountdown(){const el=$('countdown');if(!settings.date){el.textContent='✨ Een magisch avontuur wacht op je';return}const ms=new Date(settings.date).getTime()-Date.now();if(!Number.isFinite(ms)){el.textContent='';return}if(ms<=0){el.textContent='✨ Het magische moment is aangebroken!';return}const days=Math.floor(ms/86400000),hours=Math.floor(ms%86400000/3600000),minutes=Math.floor(ms%3600000/60000),seconds=Math.floor(ms%60000/1000);el.textContent=`⏳ ${days}d ${hours}u ${minutes}m ${seconds}s tot het magische moment`}
+function render(){updateMap();const t=themes[settings.theme]||themes.sint;const d=distances[settings.distance]||distances.buurt;document.querySelectorAll('[data-theme]').forEach(b=>{b.classList.toggle('selected',b.dataset.theme===settings.theme);b.setAttribute('aria-pressed',String(b.dataset.theme===settings.theme))});$('blip').textContent=t.icon;$('blip').style.left=d.position[0]+'%';$('blip').style.top=d.position[1]+'%';$('distance').textContent='● '+d.label;$('headline').textContent=d.headline;$('message').textContent=settings.message.trim()||`${t.who}: ${d.description}`;updateCountdown()}
+document.querySelectorAll('[data-theme]').forEach(button=>button.addEventListener('click',()=>{settings.theme=button.dataset.theme;try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{}render()}));
+function updateCountdown(){const el=$('countdown');if(!settings.date){el.textContent='✨ Een magisch avontuur wacht op je';return}const ms=new Date(settings.date).getTime()-Date.now();if(!Number.isFinite(ms)){el.textContent='';return}if(ms<=0){el.textContent='✨ Het magische moment is aangebroken!';return}const days=Math.floor(ms/86400000),hours=Math.floor(ms%86400000/3600000),minutes=Math.floor(ms%3600000/60000),seconds=Math.floor(ms%60000/1000);el.textContent=`${days} dagen · ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`}
 $('scan').addEventListener('click',()=>{const radar=$('radar');radar.animate([{filter:'brightness(1)'},{filter:'brightness(1.6)'},{filter:'brightness(1)'}],{duration:1100});$('scan').textContent='✨ Signaal gevonden!';setTimeout(()=>$('scan').textContent='📡 Scan opnieuw',1500)});
 $('openParent').addEventListener('click',()=>{$('pinInput').value='';$('authError').textContent='';$('authDialog').showModal()});
 $('cancelAuth').addEventListener('click',()=>$('authDialog').close());
 $('authForm').addEventListener('submit',e=>{e.preventDefault();if($('pinInput').value!==String(settings.pin)){$('authError').textContent='Deze code klopt niet.';return}$('authDialog').close();$('parentTheme').value=settings.theme;$('parentDistance').value=settings.distance;$('parentDate').value=settings.date;$('parentPostcode').value=settings.postcode||'';$('parentCity').value=settings.city||'';$('parentMessage').value=settings.message;$('parentPin').value='';$('parentDialog').showModal()});
 $('closeParent').addEventListener('click',()=>$('parentDialog').close());
 $('saveParent').addEventListener('click',()=>{const pin=$('parentPin').value.trim();if(pin&&(!/^\d{4,12}$/.test(pin))){alert('Gebruik 4 tot 12 cijfers voor de oudercode.');return}settings={...settings,theme:$('parentTheme').value,distance:$('parentDistance').value,date:$('parentDate').value,postcode:$('parentPostcode').value.replace(/\s/g,'').toUpperCase(),city:$('parentCity').value.trim().slice(0,55),message:$('parentMessage').value.trim(),pin:pin||settings.pin};try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{alert('Opslaan op dit apparaat is niet gelukt. Controleer de browserinstellingen.')}render();$('parentDialog').close()});
-render();setInterval(()=>{updateCountdown();updateMap()},1000);
+
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
 // Privacyvriendelijke fantasiekaart: globale positie op basis van uitsluitend de eerste twee postcodecijfers.
@@ -82,9 +83,11 @@ function getRoute(destination){
 function interpolate(a,b,t){const smooth=t*t*(3-2*t);return [a[0]+(b[0]-a[0])*smooth,a[1]+(b[1]-a[1])*smooth]}
 function updateMap(){
  const dest=getDestination(),route=getRoute(dest.point),end=settings.date?new Date(settings.date).getTime():NaN;
+ $('destinationText').textContent=dest.name||'Jouw regio';
+ $('arrivalText').textContent=Number.isFinite(end)?new Intl.DateTimeFormat('nl-NL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}).format(new Date(end)):'Nog niet ingesteld';
  const duration=7*86400000,now=Date.now();
  const progress=Number.isFinite(end)?Math.max(0,Math.min(1,(now-(end-duration))/duration)):.28;
- const n=route.length-1,scaled=progress*n,segment=Math.min(n-1,Math.floor(scaled)),part=Math.max(0,Math.min(1,scaled-segment));
+ $('progressBar').style.width=Math.round(progress*100)+'%';const n=route.length-1,scaled=progress*n,segment=Math.min(n-1,Math.floor(scaled)),part=Math.max(0,Math.min(1,scaled-segment));
  const [x,y]=interpolate(route[segment].xy,route[segment+1].xy,part);
  const t=themes[settings.theme]||themes.sint;
  $('traveler').textContent=t.icon;$('traveler').setAttribute('x',x);$('traveler').setAttribute('y',y-17);
@@ -99,7 +102,7 @@ function updateMap(){
  const stop=progress>=1?'Thuis':route[segment].name;
  const next=route[segment+1].name;
  const note=$('mapNote'),event=$('cityEvent');
- const homeName=dest.name||'jouw regio';
+ const homeName=dest.name||'jouw regio';$('bannerText').textContent=Number.isFinite(end)?`${t.who} komt steeds dichter bij ${homeName}!`:'Een magische reis door Nederland wacht op je!';
  $('homeCity').textContent=dest.name|| (dest.hasPostcode?'Jouw regio':'Bestemming');
  $('homeCity').setAttribute('x',Math.max(110,Math.min(1420,dx)));
  $('homeCity').setAttribute('y',dy+94);
@@ -124,3 +127,5 @@ function updateMap(){
    item.textContent=(progress*n>=i?'✓ ':'○ ')+route[i].name;stops.append(item);
  }
 }
+
+render();setInterval(()=>{updateCountdown();updateMap()},1000);

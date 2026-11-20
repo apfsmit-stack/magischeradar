@@ -12,3 +12,5 @@ De kaart is illustratief: stadslabels en regioposities zijn niet cartografisch n
 Instellingen worden opgeslagen in de browser en zijn niet tussen apparaten gesynchroniseerd.
 
 Versie 1.4: Reis via herkenbare steden met voortgangsmeldingen. De woonplaats kan apart worden ingevoerd en verschijnt op de kaart, ook als die niet op de illustratie staat. De locatie is een benadering; geen postcode-naar-adresdienst.
+
+Versie 1.5: vernieuwde indeling in stijl van het oorspronkelijke ontwerp, thema-keuzemenu, kaart, aankomstkaart, aftelklok.
