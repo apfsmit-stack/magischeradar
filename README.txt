@@ -1,1 +1,7 @@
-MagischeRadar 1.1\n\nUpload alle bestanden naar de hoofdmap van dezelfde GitHub-repository. GitHub Pages publiceert de wijzigingen automatisch. Herlaad de pagina eventueel met Ctrl+F5.\n\nOpen het ouderportaal met de bestaande pincode, stel postcode en aankomsttijd in en sla op. De app gebruikt alleen de eerste twee postcodecijfers voor een geschatte regio. De route is fictief en begint zeven dagen voor de aankomst. Instellingen blijven uitsluitend in de browser van het gebruikte apparaat.\n\nDe kaart is een decoratieve, vereenvoudigde weergave van Nederland, geen geografisch nauwkeurige navigatiekaart.\n
+MagischeRadar 1.2
+
+Deze versie bevat een grotere, kleurrijkere kaart van Nederland met extra decoraties, een vernieuwde indeling voor grote schermen en behoudt het bestaande ouderportaal.
+
+Upload alle bestanden naar de hoofdmap van dezelfde GitHub-repository. Wacht op de groene check bij Actions en herlaad de site met Ctrl+F5.
+
+Let op: de kaart is een fantasiekaart. De postcode wordt uitsluitend grofweg op basis van de eerste twee cijfers bepaald.
