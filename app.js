@@ -4,6 +4,11 @@ const defaults={theme:'sint',distance:'buurt',date:'',message:'',postcode:'',cit
 let settings={...defaults};
 try{const stored=JSON.parse(localStorage.getItem(KEY));if(stored&&typeof stored==='object')settings={...defaults,...stored}}catch{}
 const $=id=>document.getElementById(id);
+// Herbereken automatisch bepaalde locaties uit oudere versies. Handmatige keuzes blijven staan.
+if(!settings.manualPoint && settings.locationCalibration!=='2.3'){
+ settings.mapPoint=null;settings.geoPostcode='';settings.locationCalibration='2.3';
+ try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{}
+}
 let previewStart=0,previewActive=false,previewFrame=0;
 function stopPreview(){previewActive=false;cancelAnimationFrame(previewFrame);$('previewStrip').hidden=true;$('startPreview').disabled=false;updateMap()}
 function runPreview(now){if(!previewActive)return;const elapsed=Math.max(0,now-previewStart);const progress=Math.min(1,elapsed/30000);updateMap(progress);$('previewPercent').textContent=Math.round(progress*100)+'%';if(progress>=1){previewActive=false;$('startPreview').disabled=false;setTimeout(()=>{$('previewStrip').hidden=true;updateMap()},2200)}else previewFrame=requestAnimationFrame(runPreview)}
@@ -45,7 +50,8 @@ function postcodePoint(code){
  const n=Number(m[1]);
  if(n>=10&&n<=12)return [605,392]; // Amsterdam
  if(n>=13&&n<=14)return [790,412]; // Flevoland
- if(n>=15&&n<=19)return [540,340]; // Noord-Holland
+ if(n===16)return [735,298]; // Hoorn en West-Friesland, voorlopige regio
+ if(n>=15&&n<=19)return [605,310]; // Noord-Holland
  if(n>=20&&n<=21)return [490,415]; // Haarlem
  if(n>=22&&n<=25)return [430,515]; // Den Haag
  if(n>=26&&n<=29)return [530,570]; // Zuid-Holland
@@ -85,16 +91,18 @@ function getDestination(){
 }
 function getRoute(destination){
  const [x,y]=destination;
- // Een logische fantasieroute langs herkenbare steden, passend bij de regio.
+ // Een reis van noord naar zuid, zonder onlogische omwegen of terugrijden.
+ // Voor Noord-Holland gaat de reis via Friesland en Amsterdam alleen als dat logisch is.
  let names;
- if(y<290)names=['Groningen','Leeuwarden'];
- else if(x<570)names=['Groningen','Zwolle','Amsterdam','Den Haag'];
- else if(x<770)names=['Groningen','Zwolle','Amsterdam','Utrecht'];
- else if(y>700)names=['Groningen','Zwolle','Utrecht','Eindhoven'];
- else if(x>970)names=['Groningen','Zwolle','Arnhem'];
+ if(y<360 && x<820) names=['Groningen','Leeuwarden'];
+ else if(y<300) names=['Groningen','Leeuwarden'];
+ else if(x<570) names=['Groningen','Leeuwarden','Amsterdam','Den Haag'];
+ else if(x<790 && y<470) names=['Groningen','Leeuwarden','Amsterdam'];
+ else if(x<900 && y<630) names=['Groningen','Zwolle','Utrecht'];
+ else if(y>700) names=['Groningen','Zwolle','Utrecht','Eindhoven'];
+ else if(x>970) names=['Groningen','Zwolle','Arnhem'];
  else names=['Groningen','Zwolle','Utrecht'];
- // De laatste halte ligt altijd bij de woonplaats. Voorkom dubbele eindhaltes.
- names=names.filter(n=>Math.hypot(routeCities[n][0]-x,routeCities[n][1]-y)>45);
+ names=names.filter(n=>Math.hypot(routeCities[n][0]-x,routeCities[n][1]-y)>65);
  return [{name:'Vertrek',xy:[1270,95]},...names.map(name=>({name,xy:routeCities[name]})),{name:'Thuis',xy:destination}];
 }
 function interpolate(a,b,t){const smooth=t*t*(3-2*t);return [a[0]+(b[0]-a[0])*smooth,a[1]+(b[1]-a[1])*smooth]}
@@ -123,7 +131,9 @@ function updateMap(overrideProgress=null){
  const note=$('mapNote'),event=$('cityEvent');
  const homeName=dest.name||'jouw regio';$('nextStop').textContent=progress>=1?'🎉 Aangekomen in '+homeName:('✨ Volgende halte: '+(next==='Thuis'?homeName:next));drawCityCelebration(route,scaled,progress);$('bannerText').textContent=Number.isFinite(end)?`${sentenceWho(t)} ${verb(t,'komt','komen')} steeds dichter bij ${homeName}!`:'Een magische reis door Nederland wacht op je!';
  $('homeCity').textContent=dest.name|| (dest.hasPostcode?'Jouw regio':'Bestemming');
- const labelX=dx>1120?dx-105:dx<350?dx+105:dx+90;const labelY=dy<280?dy+100:dy>790?dy-82:dy+94;
+ // Houd de woonplaatsnaam weg van bestaande stadslabels (vooral Amsterdam).
+ const labelX=(dy<380&&dx>=550&&dx<850)?dx+80:(dx>1120?dx-105:dx<350?dx+105:dx+90);
+ const labelY=(dy<380&&dx>=550&&dx<850)?dy-52:(dy<280?dy+100:dy>790?dy-82:dy+94);
  $('homeCity').setAttribute('x',Math.max(105,Math.min(1420,labelX)));
  $('homeCity').setAttribute('y',labelY);
  $('homeCity').setAttribute('font-size',dest.name.length>16?'26':'34');$('travelMeterText').textContent=(previewActive||overrideProgress!==null)?('Voorbeeldreis: '+Math.round(progress*100)+'% afgelegd') :Number.isFinite(end)?(progress>=1?'De magische reis is voltooid!':Math.round(progress*100)+'% van de reis afgelegd'):'De magische reis begint zodra de aankomsttijd is ingesteld';
@@ -173,11 +183,11 @@ const geoAnchors=[
  [4.7545,52.9599,620,260], // Den Helder
  [6.8937,52.2215,1190,375], // Enschede
  [6.5627,52.9946,1120,240], // Assen
- [5.059,52.643,700,310], // Hoorn
+ [5.059,52.643,735,298], // Hoorn: boven en rechts van Amsterdam, aan Markermeer
  [5.291,52.456,820,355], // Lelystad
  [5.221,52.355,785,420], // Almere
- [4.752,52.632,620,345], // Alkmaar
- [5.471,52.698,825,290], // Enkhuizen
+ [4.752,52.632,605,310], // Alkmaar
+ [5.471,52.698,845,283], // Enkhuizen
  [4.892,52.958,755,210], // Texel
  [5.063,51.558,700,705], // Tilburg
  [5.303,51.690,770,663], // Den Bosch
@@ -226,7 +236,7 @@ async function lookupPostcode(){
   if(!match)throw Error('Geen kaartcoördinaten');
   const lon=Number(match[1]),lat=Number(match[2]);
   if(lon<3||lon>8||lat<50||lat>54)throw Error('Ongeldige kaartcoördinaten');
-  if(settings.postcode.slice(0,4)!==pc || settings.manualPoint)return;settings.mapPoint=lonLatToMap(lon,lat);settings.geoPostcode=pc;
+  if(settings.postcode.slice(0,4)!==pc || settings.manualPoint)return;settings.mapPoint=lonLatToMap(lon,lat);settings.geoPostcode=pc;settings.locationCalibration='2.3';
   if(!settings.city.trim()&&result.woonplaatsnaam)settings.city=String(result.woonplaatsnaam).slice(0,55);
   localStorage.setItem(KEY,JSON.stringify(settings));render();$('locationStatus').textContent='✓ Postcodegebied '+pc+' gevonden. Controleer de plek op de kaart.';
  }catch(err){$('locationStatus').textContent='Postcode niet automatisch gevonden. Wijs de woonplaats eventueel zelf aan op de kaart.';console.info('Postcodezoekfunctie niet beschikbaar; gebruik de kaartkeuze.',err.message)}
@@ -239,7 +249,7 @@ $('pickLocation').addEventListener('click',()=>{
 $('nlMap').addEventListener('click',e=>{
  if(!picking)return;
  const svg=$('nlMap');const point=svg.createSVGPoint();point.x=e.clientX;point.y=e.clientY;const ctm=svg.getScreenCTM();if(!ctm)return;const local=point.matrixTransform(ctm.inverse());const x=Math.max(0,Math.min(1536,local.x)),y=Math.max(0,Math.min(1024,local.y));
- settings.mapPoint=[Math.round(x),Math.round(y)];settings.geoPostcode=settings.postcode.slice(0,4);settings.manualPoint=true;
+ settings.mapPoint=[Math.round(x),Math.round(y)];settings.geoPostcode=settings.postcode.slice(0,4);settings.manualPoint=true;settings.locationCalibration='2.3';
  picking=false;$('nlMap').classList.remove('picking');
  settings.city=$('parentCity').value.trim()||settings.city;
  localStorage.setItem(KEY,JSON.stringify(settings));render();
@@ -266,7 +276,7 @@ function drawTravelStars(points){
   const a=points[i-1],b=points[i];const len=Math.hypot(b[0]-a[0],b[1]-a[1]);
   const count=Math.max(1,Math.floor(len/38));
   for(let j=1;j<=count;j++){
-   const t=j/(count+1),x=a[0]+(b[0]-a[0])*t,y=a[1]+(b[1]-a[1])*t- Math.sin(Math.PI*t)*Math.min(38,len*.12);
+   const t=j/(count+1),[x,y]=pointOnCurve(a,b,t);
    const star=document.createElementNS(ns,'circle');star.setAttribute('cx',x);star.setAttribute('cy',y);star.setAttribute('r',j%3===0?'6':'3.5');star.setAttribute('fill',j%3===0?'#fffef0':'#ffe17a');star.setAttribute('class','travel-star');star.style.animationDelay=(j*.17+i*.31)+'s';g.append(star);
   }
  }
