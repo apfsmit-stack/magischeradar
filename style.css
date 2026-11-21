@@ -20,3 +20,106 @@
 @keyframes floatFigure{50%{transform:translateY(-10px)}}
 @media(max-width:680px){.theme-button span{min-width:32px;width:32px;height:36px}.theme-button{min-height:53px}.hero-figure{width:22%;height:34%}}
 @media(prefers-reduced-motion:reduce){.hero-figure{animation:none}}
+
+/* Magische reis: route en figuren zijn duidelijk zichtbaar */
+.theme-button{cursor:default}.theme-button:hover{filter:none}.theme-button.selected{box-shadow:0 0 20px #ffcc5c,inset 0 0 18px #ffd36e99}
+.map-stage{box-shadow:inset 0 0 28px #9edaff55}
+#traveler{filter:drop-shadow(0 0 14px #fff3a2) drop-shadow(0 0 8px #ffbe32)}
+#futureTrail{filter:drop-shadow(0 0 5px #ffedaa)}
+#nlMap.picking{cursor:crosshair;outline:5px solid #ffe47d;outline-offset:-5px}
+.journey-caption{font-size:13px;color:#ffe7a4;font-weight:800;margin:5px}
+.blip img{width:34px;height:34px;object-fit:contain}
+#pickLocation{width:100%;margin-top:8px}
+
+/* 1.9: visuele afwerking in de stijl van het oorspronkelijke magische ontwerp */
+.shell{max-width:1900px;padding:12px 18px 35px}
+.topbar{padding:0 12px 16px}
+h1{font-size:clamp(34px,3.2vw,55px);-webkit-text-stroke:.5px #fff;filter:drop-shadow(0 0 8px #5a96ff)}
+.experience{grid-template-columns:220px minmax(0,1fr) 340px;gap:16px;align-items:stretch}
+.themes-panel{margin-top:30px;align-self:start;padding:19px 12px;border-color:#65c9ff;box-shadow:0 0 23px #46baff80,inset 0 0 26px #72b8ff35}
+.themes-panel h2{font-size:24px;margin-bottom:20px}
+.theme-button{min-height:78px;font-size:17px;gap:10px;border-radius:20px}
+.theme-button span{width:59px;min-width:59px;height:59px}
+.theme-button.selected{background:linear-gradient(120deg,#54346d,#182d77);border-color:#ffdb67;box-shadow:0 0 17px #ffba3f,inset 0 0 20px #ffc75377}
+.theme-art{filter:drop-shadow(0 0 7px #ffd97b88)}
+.map-wrap{padding:6px;border:2px solid #65d6ff;box-shadow:0 0 27px #4caeff80;background:linear-gradient(#154e9e,#082969)}
+.map-stage{border:1px solid #b0eaff;border-radius:19px}
+.map-stage:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;box-shadow:inset 0 0 36px #c8e8ff55;z-index:5}
+.map-sparkles{position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(circle at 11% 14%,#fff6d5 0 2px,transparent 4px),radial-gradient(circle at 81% 19%,#fff3b5 0 2px,transparent 5px),radial-gradient(circle at 39% 75%,#fff 0 2px,transparent 4px);animation:twinkle 4s ease-in-out infinite alternate}
+.hero-figure{display:none}
+#traveler{filter:drop-shadow(0 0 10px #fff1b6) drop-shadow(0 0 18px #ffbd36);transition:x .85s linear,y .85s linear}
+#travelTrail{stroke-width:9;stroke-dasharray:2 20;animation:trailFlow 2.5s linear infinite}
+#travelTrailGlow{stroke-width:19;opacity:.88}
+#futureTrail{stroke-width:6;stroke-dasharray:3 21;opacity:.62}
+.travel-star{filter:drop-shadow(0 0 8px #ffec9e);animation:starPulse 2s ease-in-out infinite alternate}
+#homeRing{stroke:#fff2a3;stroke-width:6;filter:drop-shadow(0 0 12px #ffe785)}
+#homeCity{font-family:system-ui,sans-serif;stroke-width:11;fill:#fff8cc}
+.map-bottom{padding:10px 8px 15px;min-height:136px}
+.journey-caption{font-size:12px;letter-spacing:2px;color:#a8e6ff;margin:3px 0 9px}
+.city-event{font-size:clamp(16px,1.55vw,23px);color:#ffe49a;text-shadow:0 2px 5px #071637,0 0 10px #ffcc5680}
+.route-stop{font-size:12px;padding:5px 10px;background:linear-gradient(#204c96,#0a2459);border-color:#78bfff}
+.route-stop.passed{background:#234b75;border-color:#f7d677}
+.travel-meter{color:#a9e6ff;font-size:12px;font-weight:750;margin:8px 0 4px}
+.info-panel{gap:15px}
+.info-card,.countdown-card,.radar-wrap{border-color:#73b7ff;box-shadow:0 0 20px #3d90ff50,inset 0 0 18px #78aaff25}
+.info-card{padding:20px 17px}
+.info-line strong{font-size:18px}
+.journey-heading{font-size:22px}
+.progress-track{height:19px;box-shadow:0 0 12px #76e9ff50}
+.countdown-card{padding:19px 12px}
+.countdown-title{font-size:24px}
+.time-unit strong{font-size:clamp(20px,1.8vw,30px);padding:11px 2px;box-shadow:inset 0 0 11px #80b7ff4b}
+.radar-wrap{justify-content:center;min-height:105px}
+.radar{flex-basis:94px;width:94px}
+.footer-banner{max-width:1280px;padding:18px;border-color:#b1d3ff;box-shadow:0 0 25px #82baff88,inset 0 0 15px #9cbcff55}
+@keyframes trailFlow{to{stroke-dashoffset:-44}}
+@keyframes starPulse{to{opacity:.35;transform:scale(.8);transform-origin:center}}
+@keyframes twinkle{to{opacity:.4}}
+@media(max-width:1250px){.experience{grid-template-columns:180px minmax(0,1fr)}.themes-panel{margin-top:0}.info-panel{grid-column:1/-1;display:grid;grid-template-columns:2fr 1fr 1fr}.info-card{grid-column:auto}.theme-button{font-size:14px}.theme-button span{width:45px;min-width:45px;height:48px}}
+@media(max-width:750px){.experience{grid-template-columns:1fr;gap:11px}.themes-panel{display:flex;overflow-x:auto;margin-top:0;gap:7px;padding:9px}.themes-panel h2,.theme-hint{display:none}.theme-button{width:auto;min-height:57px;flex-shrink:0;font-size:12px;padding:6px}.theme-button span{width:36px;min-width:36px;height:39px}.map-wrap{grid-row:2}.info-panel{grid-column:auto;display:flex}.map-bottom{min-height:115px}.map-stage{border-radius:13px}.footer-banner{border-radius:25px}}
+@media(prefers-reduced-motion:reduce){.map-sparkles,.travel-star,#travelTrail{animation:none}#traveler{transition:none}}
+
+/* MagischeRadar 2.0: levendige reisfiguren en haltefeestjes */
+#travelerMotion{transform-box:fill-box;transform-origin:center bottom;will-change:transform}
+.motion-sint{animation:horseGallop .58s ease-in-out infinite}
+.motion-fee{animation:fairyFlight 2.4s ease-in-out infinite}
+.motion-paas{animation:bunnyHop .85s cubic-bezier(.35,0,.5,1) infinite}
+.motion-kabouter{animation:gnomeWalk .8s ease-in-out infinite}
+.motion-kerst{animation:sleighFlight 2.8s ease-in-out infinite}
+.motion-arrived{animation:arrivalWiggle 1.7s ease-in-out infinite}
+@keyframes horseGallop{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-13px) rotate(2deg)}}
+@keyframes fairyFlight{0%,100%{transform:translate(0,2px) rotate(-5deg)}50%{transform:translate(7px,-23px) rotate(5deg)}}
+@keyframes bunnyHop{0%,100%{transform:translateY(0) scale(1,1)}45%{transform:translateY(-30px) scale(.96,1.03)}75%{transform:translateY(-7px)}}
+@keyframes gnomeWalk{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
+@keyframes sleighFlight{0%,100%{transform:translate(0,2px) rotate(-2deg)}50%{transform:translate(8px,-19px) rotate(3deg)}}
+@keyframes arrivalWiggle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.05)}}
+.next-stop{display:inline-block;margin:7px auto 4px;padding:7px 16px;border-radius:999px;background:linear-gradient(100deg,#173875,#3265a5,#173875);border:1px solid #f5d68a;color:#fff0bc;font-weight:850;font-size:clamp(12px,1.3vw,16px);box-shadow:0 0 15px #ffd36b33}
+.city-spark{filter:drop-shadow(0 0 8px #ffe36a);animation:cityTwinkle 1.1s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+@keyframes cityTwinkle{from{opacity:.4;transform:scale(.65)}to{opacity:1;transform:scale(1.2)}}
+#travelTrail{stroke-dasharray:4 17;animation:routeShimmer 1.6s linear infinite}
+@keyframes routeShimmer{to{stroke-dashoffset:-42}}
+#travelTrailGlow{opacity:.78}
+@media(prefers-reduced-motion:reduce){#travelerMotion,.city-spark,#travelTrail{animation:none!important}}
+
+/* MagischeRadar 2.1: controleerbare voorbeeldreis */
+.preview-strip{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:14px;margin:8px auto;padding:9px 13px;border:1px solid #ffdf8b;border-radius:14px;background:#112e69;color:#fff4cc;font-weight:800;max-width:620px}
+.preview-strip[hidden]{display:none!important}
+.preview-strip button{border:1px solid #f8d788;border-radius:10px;background:#284a84;color:white;padding:7px 13px;cursor:pointer;font-weight:700}
+.preview-controls{padding:14px;border:1px solid #e4c779;border-radius:14px;background:#eaf4ff;color:#17365d;margin:14px 0}
+.preview-controls h3{margin:0 0 5px;font-size:17px}.preview-controls p{margin:0 0 12px;font-size:13px}.preview-controls button{width:100%}
+
+/* 2.2: kaartaanwijzer en verbeterde animaties */
+#nlMap.picking{pointer-events:auto!important;cursor:crosshair;touch-action:manipulation}
+.map-stage:has(#nlMap.picking){box-shadow:inset 0 0 0 5px #ffe477,0 0 25px #ffd44a}
+#travelerMotion{transform-box:fill-box;transform-origin:center 85%}
+.motion-sint{animation:horseGallop22 .5s ease-in-out infinite}
+.motion-fee{animation:fairyFlight22 1.9s ease-in-out infinite}
+.motion-paas{animation:bunnyHop22 .78s ease-in-out infinite}
+.motion-kabouter{animation:gnomeWalk22 .66s ease-in-out infinite}
+.motion-kerst{animation:sleighFlight22 2.5s ease-in-out infinite}
+@keyframes horseGallop22{0%,100%{transform:translateY(2px) rotate(-2deg) scaleX(1)}25%{transform:translateY(-10px) rotate(1deg) scaleX(.99)}50%{transform:translateY(-16px) rotate(3deg)}75%{transform:translateY(-5px) rotate(-1deg)}}
+@keyframes fairyFlight22{0%,100%{transform:translate(0,2px) rotate(-5deg)}40%{transform:translate(6px,-22px) rotate(4deg)}70%{transform:translate(-3px,-11px) rotate(-2deg)}}
+@keyframes bunnyHop22{0%,100%{transform:translateY(0) scale(1,1)}40%{transform:translateY(-31px) scale(.97,1.04)}70%{transform:translateY(-8px) scale(1.02,.98)}}
+@keyframes gnomeWalk22{0%,100%{transform:translateY(0) rotate(-5deg)}25%{transform:translateY(-7px) rotate(0)}50%{transform:translateY(0) rotate(5deg)}75%{transform:translateY(-7px) rotate(0)}}
+@keyframes sleighFlight22{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translate(8px,-17px) rotate(3deg)}}
+@media(prefers-reduced-motion:reduce){#travelerMotion{animation:none!important}}
