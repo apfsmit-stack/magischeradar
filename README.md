@@ -1,16 +1,11 @@
-# MagischeRadar 2.4
+# MagischeRadar 2.5
 
-## Nieuw
-- Verhalende tussenstops met themaspecifieke berichten
-- Feestelijke sterretjes bij tussenstops en aankomst
-- Zacht meebewegende camera in de kaart (bij spannende en extra magische reis)
-- Ouders kiezen Rustige, Spannende of Extra magische reis
-- Voorbeeldreis van 30 seconden met korte pauzes bij haltes
-- Animaties voor vijf figuren en een sterker eindmoment
-- Respecteert de systeeminstelling voor minder beweging
+Nieuw: vuurwerk bij aankomst, feestbanner, zwaaiknop, magische verrassingsknop en een 10 seconden durende aankomsttest in het ouderportaal. Alle bestaande instellingen en thema’s blijven behouden.
 
-## Installeren
-Upload de bestanden uit deze map naar de hoofdmap van je bestaande GitHub Pages repository. Vervang de vorige bestanden. Wacht op publicatie en ververs de pagina.
+## Installatie
+Upload alle bestanden in deze map naar de hoofdmap van je bestaande GitHub Pages-repository. Vervang de oude bestanden en vernieuw de pagina met Ctrl+F5.
 
-## Let op
-De route is fictief. De postcodepositie is een benadering op een artistieke kaart. De oudercode is geen sterke beveiliging. De animaties zijn geen losse ledemaatanimaties; de bestaande illustraties bewegen als geheel.
+## Testen
+Open Ouders, log in en kies ‘Bekijk aankomstfeest (10 seconden)’. Of start de voorbeeldreis van 30 seconden. Kinderen kunnen op ‘Zwaai’ en ‘Magische verrassing’ drukken.
+
+De effecten zijn fictief en geluidloos. Bij ‘Rustige reis’ of een systeemvoorkeur voor minder beweging worden vuurwerkeffecten uitgeschakeld.

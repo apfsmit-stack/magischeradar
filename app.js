@@ -9,11 +9,12 @@ if(!settings.manualPoint && settings.locationCalibration!=='2.3'){
  settings.mapPoint=null;settings.geoPostcode='';settings.locationCalibration='2.3';
  try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{}
 }
-let previewStart=0,previewActive=false,previewFrame=0;
-function stopPreview(){previewActive=false;cancelAnimationFrame(previewFrame);$('previewStrip').hidden=true;$('startPreview').disabled=false;updateMap()}
+let previewStart=0,previewActive=false,previewFrame=0,arrivalTestTimer=0,arrivalEffectDone=false;
+function stopPreview(){clearTimeout(arrivalTestTimer);stopFireworks();previewActive=false;cancelAnimationFrame(previewFrame);$('previewStrip').hidden=true;$('startPreview').disabled=false;updateMap()}
 function runPreview(now){if(!previewActive)return;const elapsed=Math.max(0,now-previewStart);const linear=Math.min(1,elapsed/30000);const progress=previewJourneyProgress(linear);updateMap(progress);$('previewPercent').textContent=Math.round(linear*100)+'%';if(linear>=1){previewActive=false;$('startPreview').disabled=false;setTimeout(()=>{$('previewStrip').hidden=true;updateMap()},2200)}else previewFrame=requestAnimationFrame(runPreview)}
 $('startPreview').addEventListener('click',()=>{$('parentDialog').close();previewActive=true;previewStart=performance.now();$('previewStrip').hidden=false;$('startPreview').disabled=true;previewFrame=requestAnimationFrame(runPreview)});
 $('stopPreview').addEventListener('click',stopPreview);
+$('testArrival').addEventListener('click',()=>{if(previewActive)stopPreview();$('parentDialog').close();previewActive=true;$('previewStrip').hidden=false;$('previewPercent').textContent='100';$('startPreview').disabled=true;updateMap(1);launchFireworks(true);arrivalTestTimer=setTimeout(()=>stopPreview(),10000)});
 const themes={sint:{name:'Sinterklaas & Pieten',icon:'🐎',who:'De Pieten',plural:true,travel:'Sinterklaas rijdt op Ozosnel'},fee:{name:'Tandenfee',icon:'🧚',who:'de tandenfee',plural:false},paas:{name:'Paashaas',icon:'🐰',who:'de paashaas',plural:false},kabouter:{name:'Kabouters',icon:'🍄',who:'de kabouters',plural:true},kerst:{name:'Kerstman',icon:'🎅',who:'de kerstman',plural:false}};
 // Verhaalgebeurtenissen zijn fictief, niet gebaseerd op live locatiegegevens.
 const adventures={
@@ -43,9 +44,42 @@ function updateStory(route,scaled,progress,preview){
  $('storyIcon').textContent=a.icon;$('storyTitle').textContent=title;$('storyDescription').textContent=description;
  const active=settings.magic!=='rustig';
  $('storyCard').classList.toggle('celebrating',active&&(atStop||arrived));
- if(key!==previousCelebration){previousCelebration=key;if(active&&(atStop||arrived)&&performance.now()-lastBurst>1200){lastBurst=performance.now();burstMagic(arrived?20:11);}}
+ if(key!==previousCelebration){previousCelebration=key;if(active&&(atStop||arrived)&&performance.now()-lastBurst>1200){lastBurst=performance.now();burstMagic(arrived?34:11);if(arrived)launchFireworks(true);}}
  if(!preview && !Number.isFinite(new Date(settings.date).getTime()))$('storyCard').classList.remove('celebrating');
 }
+// 2.5: feestelijk maar begrensd vuurwerk, zonder geluid of externe diensten.
+const fireCanvas=$('fireworksCanvas'),fireCtx=fireCanvas.getContext('2d');
+let fireParticles=[],fireFrame=0,fireUntil=0,fireLast=0,fireShow=false;
+const fireColors=['#ffe87d','#ff8dd9','#80f8ff','#8dffbd','#ffffff','#ffb16b'];
+function stopFireworks(){fireShow=false;fireParticles=[];cancelAnimationFrame(fireFrame);fireCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);$('arrivalToast').classList.remove('visible')}
+function launchFireworks(arrival=false){
+ if(settings.magic==='rustig'||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const rect=fireCanvas.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);
+ fireCanvas.width=Math.max(1,Math.round(rect.width*dpr));fireCanvas.height=Math.max(1,Math.round(rect.height*dpr));fireCtx.setTransform(dpr,0,0,dpr,0,0);
+ fireShow=true;fireUntil=performance.now()+(arrival?8000:2600);fireLast=0;
+ if(arrival){$('arrivalToast').textContent='🎉 Hoera! Het magische bezoek is aangekomen! 🎉';$('arrivalToast').classList.add('visible')}
+ cancelAnimationFrame(fireFrame);fireFrame=requestAnimationFrame(animateFireworks);
+}
+function explodeFire(x,y,n){for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.18,speed=1.5+Math.random()*3.8;fireParticles.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:1,color:fireColors[Math.floor(Math.random()*fireColors.length)],r:1.8+Math.random()*2.7})}}
+function animateFireworks(now){if(!fireShow)return;const w=fireCanvas.clientWidth,h=fireCanvas.clientHeight;fireCtx.clearRect(0,0,w,h);
+ if(now<fireUntil&&now-fireLast>(settings.magic==='extra'?350:650)){fireLast=now;explodeFire(w*(.17+Math.random()*.66),h*(.12+Math.random()*.55),settings.magic==='extra'?58:34)}
+ fireParticles=fireParticles.filter(q=>q.life>0);for(const q of fireParticles){q.x+=q.vx;q.y+=q.vy;q.vy+=.045;q.vx*=.991;q.life-=.014;fireCtx.globalAlpha=Math.max(0,q.life);fireCtx.fillStyle=q.color;fireCtx.shadowColor=q.color;fireCtx.shadowBlur=12;fireCtx.beginPath();fireCtx.arc(q.x,q.y,q.r*Math.max(.25,q.life),0,Math.PI*2);fireCtx.fill()}fireCtx.globalAlpha=1;fireCtx.shadowBlur=0;
+ if(now<fireUntil||fireParticles.length)fireFrame=requestAnimationFrame(animateFireworks);else stopFireworks();
+}
+let lastInteraction=0;
+function characterReaction(kind){if(Date.now()-lastInteraction<900)return;lastInteraction=Date.now();
+ const t=themes[settings.theme]||themes.sint,a=adventures[settings.theme]||adventures.sint;
+ const msg=kind==='wave'?({sint:'Ozosnel hinnikt vrolijk terug!',fee:'De tandenfee zwaait met haar toverstaf!',paas:'De paashaas maakt een extra grote sprong!',kabouter:'De kabouter zwaait met zijn lantaarntje!',kerst:'De kerstman zwaait vanuit zijn slee!'})[settings.theme]:a.rest;
+ $('storyTitle').textContent=kind==='wave'?'Er wordt teruggezwaaid!':'Een magische verrassing!';$('storyDescription').textContent=msg;
+ $('heroFigure').classList.remove('reacting');void $('heroFigure').offsetWidth;$('heroFigure').classList.add('reacting');
+ if(settings.magic!=='rustig'){burstMagic(kind==='wave'?16:26);launchFireworks(false)}
+ setTimeout(()=>{$('heroFigure').classList.remove('reacting');if(!previewActive)updateMap()},2800);
+}
+$('waveHero').addEventListener('click',()=>characterReaction('wave'));
+$('magicSurprise').addEventListener('click',()=>characterReaction('surprise'));
+$('heroFigure').addEventListener('click',()=>characterReaction('wave'));
+$('heroFigure').setAttribute('role','button');$('heroFigure').setAttribute('tabindex','0');$('heroFigure').setAttribute('aria-label','Zwaai naar het magische figuurtje');
+$('heroFigure').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();characterReaction('wave')}});
 function burstMagic(count){
  if(settings.magic==='rustig'||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  const target=$('arrivalBurst');target.replaceChildren();
