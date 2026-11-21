@@ -1,6 +1,6 @@
 'use strict';
 const KEY='magischeradar-v1';
-const defaults={theme:'sint',distance:'buurt',date:'',message:'',postcode:'',city:'',pin:'2468',mapPoint:null,geoPostcode:'',manualPoint:false};
+const defaults={theme:'sint',distance:'buurt',date:'',message:'',postcode:'',city:'',pin:'2468',mapPoint:null,geoPostcode:'',manualPoint:false,magic:'spannend'};
 let settings={...defaults};
 try{const stored=JSON.parse(localStorage.getItem(KEY));if(stored&&typeof stored==='object')settings={...defaults,...stored}}catch{}
 const $=id=>document.getElementById(id);
@@ -11,15 +11,66 @@ if(!settings.manualPoint && settings.locationCalibration!=='2.3'){
 }
 let previewStart=0,previewActive=false,previewFrame=0;
 function stopPreview(){previewActive=false;cancelAnimationFrame(previewFrame);$('previewStrip').hidden=true;$('startPreview').disabled=false;updateMap()}
-function runPreview(now){if(!previewActive)return;const elapsed=Math.max(0,now-previewStart);const progress=Math.min(1,elapsed/30000);updateMap(progress);$('previewPercent').textContent=Math.round(progress*100)+'%';if(progress>=1){previewActive=false;$('startPreview').disabled=false;setTimeout(()=>{$('previewStrip').hidden=true;updateMap()},2200)}else previewFrame=requestAnimationFrame(runPreview)}
+function runPreview(now){if(!previewActive)return;const elapsed=Math.max(0,now-previewStart);const linear=Math.min(1,elapsed/30000);const progress=previewJourneyProgress(linear);updateMap(progress);$('previewPercent').textContent=Math.round(linear*100)+'%';if(linear>=1){previewActive=false;$('startPreview').disabled=false;setTimeout(()=>{$('previewStrip').hidden=true;updateMap()},2200)}else previewFrame=requestAnimationFrame(runPreview)}
 $('startPreview').addEventListener('click',()=>{$('parentDialog').close();previewActive=true;previewStart=performance.now();$('previewStrip').hidden=false;$('startPreview').disabled=true;previewFrame=requestAnimationFrame(runPreview)});
 $('stopPreview').addEventListener('click',stopPreview);
 const themes={sint:{name:'Sinterklaas & Pieten',icon:'🐎',who:'De Pieten',plural:true,travel:'Sinterklaas rijdt op Ozosnel'},fee:{name:'Tandenfee',icon:'🧚',who:'de tandenfee',plural:false},paas:{name:'Paashaas',icon:'🐰',who:'de paashaas',plural:false},kabouter:{name:'Kabouters',icon:'🍄',who:'de kabouters',plural:true},kerst:{name:'Kerstman',icon:'🎅',who:'de kerstman',plural:false}};
+// Verhaalgebeurtenissen zijn fictief, niet gebaseerd op live locatiegegevens.
+const adventures={
+ sint:{icon:'🐎',rest:'Ozosnel neemt even een slokje water.',travel:'Sinterklaas en de Pieten rijden verder. Hoor je de hoefjes?',arrival:'Sinterklaas en de Pieten zijn aangekomen!'},
+ fee:{icon:'🧚',rest:'De tandenfee strooit een beetje sterrenstof.',travel:'De tandenfee fladdert over de daken!',arrival:'De tandenfee is aangekomen!'},
+ paas:{icon:'🐰',rest:'De paashaas verstopt onderweg een glinsterend ei.',travel:'Hop, hop! De paashaas springt verder.',arrival:'De paashaas is aangekomen!'},
+ kabouter:{icon:'🍄',rest:'De kabouters rusten even onder een paddenstoel.',travel:'De kabouters wandelen vrolijk verder.',arrival:'De kabouters zijn aangekomen!'},
+ kerst:{icon:'🦌',rest:'De rendieren krijgen even een worteltje.',travel:'De kerstman vliegt met zijn rendieren verder!',arrival:'De kerstman is aangekomen!'}
+};
+function previewJourneyProgress(t){
+ // Korte pauze bij elke halte: het figuur blijft even staan voor een verrassing.
+ const stages=5,stage=Math.min(stages-1,Math.floor(t*stages)),part=t*stages-stage;
+ const held=part<.13?0:(part>.91?1:(part-.13)/.78);
+ return (stage+held)/stages;
+}
+let previousCelebration='',lastBurst=0;
+function setAdventureMode(){document.body.dataset.magic=settings.magic||'spannend'}
+function updateStory(route,scaled,progress,preview){
+ const a=adventures[settings.theme]||adventures.sint;
+ const name=settings.city||'jouw woonplaats';
+ const near=Math.round(scaled),atStop=near>0&&near<route.length-1&&Math.abs(scaled-near)<.065;
+ const arrived=progress>=.999;
+ const city=atStop?route[near].name:'';
+ const key=arrived?'arrival':atStop?'stop-'+city:'travel-'+Math.floor(scaled);
+ const title=arrived?'Hoera! We zijn er!':atStop?'Magische tussenstop in '+city+'!':progress>.86?'Bijna bij '+name+'!':'Er gebeurt iets magisch onderweg!';
+ const description=arrived?a.arrival:atStop?a.rest:progress>.86?'Kijk goed, de bestemming is al bijna in zicht!':a.travel;
+ $('storyIcon').textContent=a.icon;$('storyTitle').textContent=title;$('storyDescription').textContent=description;
+ const active=settings.magic!=='rustig';
+ $('storyCard').classList.toggle('celebrating',active&&(atStop||arrived));
+ if(key!==previousCelebration){previousCelebration=key;if(active&&(atStop||arrived)&&performance.now()-lastBurst>1200){lastBurst=performance.now();burstMagic(arrived?20:11);}}
+ if(!preview && !Number.isFinite(new Date(settings.date).getTime()))$('storyCard').classList.remove('celebrating');
+}
+function burstMagic(count){
+ if(settings.magic==='rustig'||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const target=$('arrivalBurst');target.replaceChildren();
+ const total=settings.magic==='extra'?count:Math.ceil(count*.55);
+ for(let i=0;i<total;i++){
+  const star=document.createElement('span');star.className='burst-star';star.textContent=['✦','✧','★','✨'][i%4];
+  star.style.setProperty('--angle',Math.round(i*360/total)+'deg');
+  star.style.setProperty('--reach',(75+i%4*24)+'px');star.style.animationDelay=(i%5*.05)+'s';target.append(star);
+ }
+}
+function moveCamera(x,y,progress){
+ const cam=$('mapCamera');if(!cam)return;
+ const mode=settings.magic||'spannend';
+ if(mode==='rustig'||document.getElementById('nlMap').classList.contains('picking')||window.matchMedia('(prefers-reduced-motion: reduce)').matches){cam.style.transform='none';return;}
+ // Zachte meebewegende camera, zonder de kaart uit beeld te duwen.
+ const zoom=mode==='extra'?1.095:1.045;
+ const tx=Math.max(-2.5,Math.min(2.5,(768-x)/1536*5));
+ const ty=Math.max(-2,Math.min(2,(512-y)/1024*4));
+ cam.style.transform=`translate(${tx}%,${ty}%) scale(${zoom})`;
+}
 const distances={ver:{label:'Nog ver weg',headline:'Er is iets magisch onderweg!',description:'De radar ziet een klein lichtpuntje in de verte.',position:[76,21]},buurt:{label:'In de buurt',headline:'Er gebeurt iets in de buurt!',description:'De magische signalen worden steeds sterker.',position:[66,33]},dichtbij:{label:'Heel dichtbij!',headline:'Wauw! Bijna hier!',description:'De radar ontvangt een heel sterk magisch signaal!',position:[55,43]}};
 function sentenceWho(t){return t.who.charAt(0).toUpperCase()+t.who.slice(1)}
 function verb(t,singular,plural){return t.plural?plural:singular}
 function themeIcon(t){return t.icon}
-function render(){updateMap();const t=themes[settings.theme]||themes.sint;const d=distances[settings.distance]||distances.buurt;document.querySelectorAll('[data-theme]').forEach(b=>{b.classList.toggle('selected',b.dataset.theme===settings.theme);b.setAttribute('aria-current',b.dataset.theme===settings.theme?'true':'false')});$('blip').replaceChildren();const mini=document.createElement('img');mini.src='figuur-'+settings.theme+'.png';mini.alt='';$('blip').append(mini);$('blip').style.left=d.position[0]+'%';$('blip').style.top=d.position[1]+'%';$('distance').textContent='● '+d.label;$('headline').textContent=d.headline;$('message').textContent=settings.message.trim()||`${sentenceWho(t)}: ${d.description}`;updateCountdown()}
+function render(){setAdventureMode();updateMap();const t=themes[settings.theme]||themes.sint;const d=distances[settings.distance]||distances.buurt;document.querySelectorAll('[data-theme]').forEach(b=>{b.classList.toggle('selected',b.dataset.theme===settings.theme);b.setAttribute('aria-current',b.dataset.theme===settings.theme?'true':'false')});$('blip').replaceChildren();const mini=document.createElement('img');mini.src='figuur-'+settings.theme+'.png';mini.alt='';$('blip').append(mini);$('blip').style.left=d.position[0]+'%';$('blip').style.top=d.position[1]+'%';$('distance').textContent='● '+d.label;$('headline').textContent=d.headline;$('message').textContent=settings.message.trim()||`${sentenceWho(t)}: ${d.description}`;updateCountdown()}
 // Thema wisselen kan alleen via het ouderportaal.
 function updateCountdown(){
  const el=$('countdown');
@@ -34,9 +85,9 @@ function updateCountdown(){
 $('scan').addEventListener('click',()=>{const radar=$('radar');radar.animate([{filter:'brightness(1)'},{filter:'brightness(1.6)'},{filter:'brightness(1)'}],{duration:1100});$('scan').textContent='✨ Signaal gevonden!';setTimeout(()=>$('scan').textContent='📡 Zoek opnieuw naar signalen',1500)});
 $('openParent').addEventListener('click',()=>{if(previewActive)stopPreview();$('pinInput').value='';$('authError').textContent='';$('authDialog').showModal()});
 $('cancelAuth').addEventListener('click',()=>$('authDialog').close());
-$('authForm').addEventListener('submit',e=>{e.preventDefault();if($('pinInput').value!==String(settings.pin)){$('authError').textContent='Deze code klopt niet.';return}$('authDialog').close();$('parentTheme').value=settings.theme;$('parentDistance').value=settings.distance;$('parentDate').value=settings.date;$('parentPostcode').value=settings.postcode||'';$('parentCity').value=settings.city||'';$('parentMessage').value=settings.message;$('parentPin').value='';$('locationStatus').textContent='Klik op de knop om een punt op de kaart te kiezen.';$('parentDialog').showModal()});
+$('authForm').addEventListener('submit',e=>{e.preventDefault();if($('pinInput').value!==String(settings.pin)){$('authError').textContent='Deze code klopt niet.';return}$('authDialog').close();$('parentTheme').value=settings.theme;$('parentDistance').value=settings.distance;$('parentMagic').value=settings.magic||'spannend';$('parentDate').value=settings.date;$('parentPostcode').value=settings.postcode||'';$('parentCity').value=settings.city||'';$('parentMessage').value=settings.message;$('parentPin').value='';$('locationStatus').textContent='Klik op de knop om een punt op de kaart te kiezen.';$('parentDialog').showModal()});
 $('closeParent').addEventListener('click',()=>$('parentDialog').close());
-$('saveParent').addEventListener('click',async()=>{const pin=$('parentPin').value.trim();if(pin&&(!/^\d{4,12}$/.test(pin))){alert('Gebruik 4 tot 12 cijfers voor de oudercode.');return}settings={...settings,theme:$('parentTheme').value,distance:$('parentDistance').value,date:$('parentDate').value,postcode:$('parentPostcode').value.replace(/\s/g,'').toUpperCase(),city:$('parentCity').value.trim().slice(0,55),message:$('parentMessage').value.trim(),pin:pin||settings.pin};if(settings.postcode.slice(0,4)!==settings.geoPostcode){settings.mapPoint=null;settings.geoPostcode='';settings.manualPoint=false};try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{alert('Opslaan op dit apparaat is niet gelukt. Controleer de browserinstellingen.')}render();$('parentDialog').close();await lookupPostcode();});
+$('saveParent').addEventListener('click',async()=>{const pin=$('parentPin').value.trim();if(pin&&(!/^\d{4,12}$/.test(pin))){alert('Gebruik 4 tot 12 cijfers voor de oudercode.');return}settings={...settings,theme:$('parentTheme').value,distance:$('parentDistance').value,magic:$('parentMagic').value,date:$('parentDate').value,postcode:$('parentPostcode').value.replace(/\s/g,'').toUpperCase(),city:$('parentCity').value.trim().slice(0,55),message:$('parentMessage').value.trim(),pin:pin||settings.pin};if(settings.postcode.slice(0,4)!==settings.geoPostcode){settings.mapPoint=null;settings.geoPostcode='';settings.manualPoint=false};try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{alert('Opslaan op dit apparaat is niet gelukt. Controleer de browserinstellingen.')}render();$('parentDialog').close();await lookupPostcode();});
 
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
@@ -116,6 +167,7 @@ function updateMap(overrideProgress=null){
  // Bepaal de positie op precies dezelfde gebogen SVG-curve als de zichtbare route.
  const [x,y]=pointOnCurve(route[segment].xy,route[segment+1].xy,part);
  const t=themes[settings.theme]||themes.sint;
+ moveCamera(x,y,progress);updateStory(route,scaled,progress,overrideProgress!==null);
  $('travelerMotion').setAttribute('class','travel-motion motion-'+settings.theme+(progress>=1?' motion-arrived':''));$('traveler').setAttribute('href','figuur-'+settings.theme+'.png');const tw=settings.theme==='kerst'?185:settings.theme==='sint'?153:123;const th=tw*.95;$('traveler').setAttribute('width',tw);$('traveler').setAttribute('height',th);$('traveler').setAttribute('x',x-tw/2);$('traveler').setAttribute('y',y-th*.82);$('heroFigure').src='figuur-'+settings.theme+'.png';$('heroFigure').alt=t.name;
  const [dx,dy]=dest.point;
  $('homeMarker').setAttribute('x',dx);$('homeMarker').setAttribute('y',dy+20);
@@ -129,7 +181,7 @@ function updateMap(overrideProgress=null){
  const stop=progress>=1?'Thuis':route[segment].name;
  const next=route[segment+1].name;
  const note=$('mapNote'),event=$('cityEvent');
- const homeName=dest.name||'jouw regio';$('nextStop').textContent=progress>=1?'🎉 Aangekomen in '+homeName:('✨ Volgende halte: '+(next==='Thuis'?homeName:next));drawCityCelebration(route,scaled,progress);$('bannerText').textContent=Number.isFinite(end)?`${sentenceWho(t)} ${verb(t,'komt','komen')} steeds dichter bij ${homeName}!`:'Een magische reis door Nederland wacht op je!';
+ const homeName=dest.name||'jouw regio';$('nextStop').textContent=progress>=1?'🎉 Aangekomen in '+homeName:('✨ Volgende halte: '+(next==='Thuis'?homeName:next));if(settings.magic!=='rustig')drawCityCelebration(route,scaled,progress);else $('cityCelebration').replaceChildren();$('bannerText').textContent=Number.isFinite(end)?`${sentenceWho(t)} ${verb(t,'komt','komen')} steeds dichter bij ${homeName}!`:'Een magische reis door Nederland wacht op je!';
  $('homeCity').textContent=dest.name|| (dest.hasPostcode?'Jouw regio':'Bestemming');
  // Houd de woonplaatsnaam weg van bestaande stadslabels (vooral Amsterdam).
  const labelX=(dy<380&&dx>=550&&dx<850)?dx+80:(dx>1120?dx-105:dx<350?dx+105:dx+90);
@@ -243,7 +295,7 @@ async function lookupPostcode(){
 }
 let picking=false;
 $('pickLocation').addEventListener('click',()=>{
- picking=true;$('locationStatus').textContent='Klik nu op jouw woonplaats op de grote kaart. Het ouderportaal sluit tijdelijk.';
+ picking=true;$('mapCamera').style.transform='none';$('locationStatus').textContent='Klik nu op jouw woonplaats op de grote kaart. Het ouderportaal sluit tijdelijk.';
  $('parentDialog').close();$('nlMap').classList.add('picking');
 });
 $('nlMap').addEventListener('click',e=>{

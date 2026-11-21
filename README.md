@@ -1,9 +1,16 @@
-# MagischeRadar 2.3
+# MagischeRadar 2.4
 
-Deze versie verbetert de route naar Noord-Holland en de locatie van Hoorn op de geïllustreerde kaart. Automatisch opgeslagen kaartposities uit oudere versies worden eenmalig opnieuw berekend. Handmatig gekozen posities blijven behouden. De reissterren volgen nu de gebogen route.
+## Nieuw
+- Verhalende tussenstops met themaspecifieke berichten
+- Feestelijke sterretjes bij tussenstops en aankomst
+- Zacht meebewegende camera in de kaart (bij spannende en extra magische reis)
+- Ouders kiezen Rustige, Spannende of Extra magische reis
+- Voorbeeldreis van 30 seconden met korte pauzes bij haltes
+- Animaties voor vijf figuren en een sterker eindmoment
+- Respecteert de systeeminstelling voor minder beweging
 
-## Publiceren
-Upload alle bestanden in deze map naar de hoofdmap van de bestaande GitHub Pages-repository. Wacht op de publicatie en vernieuw de pagina.
+## Installeren
+Upload de bestanden uit deze map naar de hoofdmap van je bestaande GitHub Pages repository. Vervang de vorige bestanden. Wacht op publicatie en ververs de pagina.
 
 ## Let op
-De kaart is een illustratie, geen exacte geografische kaart. De PDOK-postcodezoekfunctie vereist een internetverbinding en is nog niet live getest. Als de positie afwijkt, wijs deze aan in het ouderportaal.
+De route is fictief. De postcodepositie is een benadering op een artistieke kaart. De oudercode is geen sterke beveiliging. De animaties zijn geen losse ledemaatanimaties; de bestaande illustraties bewegen als geheel.

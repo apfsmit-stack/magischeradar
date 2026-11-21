@@ -123,3 +123,24 @@ h1{font-size:clamp(34px,3.2vw,55px);-webkit-text-stroke:.5px #fff;filter:drop-sh
 @keyframes gnomeWalk22{0%,100%{transform:translateY(0) rotate(-5deg)}25%{transform:translateY(-7px) rotate(0)}50%{transform:translateY(0) rotate(5deg)}75%{transform:translateY(-7px) rotate(0)}}
 @keyframes sleighFlight22{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translate(8px,-17px) rotate(3deg)}}
 @media(prefers-reduced-motion:reduce){#travelerMotion{animation:none!important}}
+
+/* 2.4: kinderbeleving, verhaal en camerabeweging */
+.map-stage{background:#0b3e8a;isolation:isolate}
+.map-camera{position:absolute;inset:0;background:#0d4a93 url('nederland-magisch.png') center/100% 100% no-repeat;transform-origin:50% 50%;transition:transform 2.5s cubic-bezier(.2,.7,.3,1);will-change:transform}
+.map-camera svg{position:absolute;inset:0;width:100%;height:100%}
+.story-card{display:flex;align-items:center;justify-content:center;gap:13px;margin:9px auto 5px;padding:12px 17px;max-width:660px;border:1px solid #79cfff;border-radius:20px;background:linear-gradient(125deg,#143c87,#224e9a,#17376e);box-shadow:inset 0 0 15px #75b9ff55,0 0 12px #54b9ff33;text-align:left}
+.story-card>span{font-size:37px;filter:drop-shadow(0 0 8px #ffe58b)}
+.story-card strong{display:block;color:#ffe69a;font-size:clamp(15px,1.5vw,21px)}
+.story-card p{font-size:clamp(12px,1.15vw,15px);color:#ecf6ff;margin:5px 0 0}
+.story-card.celebrating{animation:storyPulse 1.8s ease-in-out infinite alternate;border-color:#ffe28b}
+@keyframes storyPulse{to{box-shadow:0 0 28px #ffd75c88,inset 0 0 20px #ffd75c44}}
+.arrival-burst{position:absolute;inset:0;pointer-events:none;z-index:7;display:grid;place-items:center}
+.burst-star{position:absolute;font-size:clamp(20px,3vw,46px);color:#ffe581;text-shadow:0 0 14px #fff1a4;opacity:0;animation:burstOut 1.8s ease-out forwards}
+@keyframes burstOut{10%{opacity:1}100%{opacity:0;transform:rotate(var(--angle)) translateY(calc(-1 * var(--reach))) scale(.45)}}
+body[data-magic="rustig"] .map-sparkles,body[data-magic="rustig"] #travelerMotion,body[data-magic="rustig"] .city-spark,body[data-magic="rustig"] .travel-star{animation:none!important}
+body[data-magic="extra"] #travelTrailGlow{stroke-width:25;opacity:.95}
+body[data-magic="extra"] .map-sparkles{animation-duration:1.6s}
+body[data-magic="extra"] #travelerMotion{animation-duration:.7s}
+body[data-magic="rustig"] .story-card{box-shadow:none}
+@media(max-width:750px){.story-card{padding:9px 10px;gap:7px}.story-card>span{font-size:27px}.map-camera{transition-duration:1.4s}}
+@media(prefers-reduced-motion:reduce){.map-camera{transition:none!important;transform:none!important}.story-card,.burst-star{animation:none!important}.arrival-burst{display:none}}
