@@ -157,3 +157,57 @@ body[data-magic="rustig"] .story-card{box-shadow:none}
 @keyframes heroReaction{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-18px) rotate(8deg) scale(1.08)}}
 #testArrival{width:100%;margin-top:9px}
 @media(prefers-reduced-motion:reduce){#heroFigure.reacting{animation:none!important}.arrival-toast{transition:none!important}}
+
+/* 2.6: één scherm, zonder extra radar en zonder themakeuze voor kinderen */
+html,body{height:100%;overflow:hidden}
+.shell{height:100dvh;max-width:1800px;display:flex;flex-direction:column;padding:8px 12px 8px;overflow:hidden}
+.topbar{flex:0 0 auto;padding:0 6px 6px}.topbar h1{font-size:clamp(23px,2.4vw,36px)}.gear{padding:7px 13px;font-size:14px}
+.experience{flex:1;min-height:0;display:grid;grid-template-columns:minmax(130px,170px) minmax(0,1fr) minmax(210px,260px);gap:9px;align-items:stretch}
+.current-character{align-self:start;border:2px solid #7bbdff;border-radius:22px;padding:12px 8px;background:linear-gradient(160deg,#235ba7,#102454);text-align:center;box-shadow:0 0 20px #6ab8ff55;display:flex;flex-direction:column;align-items:center;gap:7px}
+.current-character img{width:100%;max-width:145px;max-height:min(26vh,180px);object-fit:contain;filter:drop-shadow(0 0 15px #ffd978);animation:characterIdle 3s ease-in-out infinite}
+.current-character small{display:block;font-size:10px;letter-spacing:1.5px;color:#a8e8ff}.current-character strong{display:block;font-size:clamp(13px,1.4vw,19px);color:#ffdf83}.current-character span{display:block;font-size:11px;color:#d4eaff;margin-top:7px}
+@keyframes characterIdle{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-12px) rotate(3deg)}}
+.map-wrap{min-height:0;display:flex;flex-direction:column;padding:4px;overflow:hidden}
+.map-stage{flex:1;min-height:0;aspect-ratio:auto;width:100%;background:#0b3e8a}
+.map-camera{background-size:100% 100%}
+.map-bottom{flex:0 0 auto;min-height:0;padding:3px 4px;display:grid;gap:3px}
+.kid-actions{margin:2px auto;gap:6px}.kid-actions button{padding:6px 9px;font-size:clamp(10px,1vw,13px);border-radius:13px}
+.story-card{margin:2px auto;padding:6px 9px;gap:7px}.story-card>span{font-size:22px}.story-card strong{font-size:clamp(12px,1.1vw,16px)}.story-card p{font-size:11px;margin:2px 0}
+.city-event{font-size:clamp(11px,1.1vw,15px)}.next-stop,.travel-meter,.route-stops{font-size:11px;margin:2px}.route-stop{font-size:10px;padding:2px 5px}
+.info-panel{min-height:0;display:flex;flex-direction:column;gap:8px}.info-card,.countdown-card{padding:10px;border-radius:19px}.info-line{gap:7px;padding:4px 0 8px;margin-bottom:4px}.info-icon{width:37px;height:37px;font-size:21px}.info-line small{font-size:11px}.info-line strong{font-size:13px}.journey-box{padding:9px;margin-top:3px;border-radius:14px}.journey-heading{font-size:15px}.journey-box p{font-size:11px;min-height:0;margin:5px 0}.countdown-title{font-size:17px}.countdown{margin:6px 0;font-size:17px}.countdown-card .primary{padding:7px 8px;font-size:12px}
+.footer-banner{flex:0 0 auto;margin:6px auto 0;padding:7px 12px;font-size:clamp(12px,1.3vw,17px);width:min(100%,1000px)}
+#travelerMotion.little-surprise{animation:littleSurprise26 .5s ease-in-out 4!important;filter:drop-shadow(0 0 18px #ffeb78)}
+@keyframes littleSurprise26{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-20px) rotate(9deg) scale(1.08)}}
+@media(max-width:950px){.experience{grid-template-columns:110px minmax(0,1fr) 190px;gap:5px}.current-character{padding:7px 4px}.current-character img{max-height:105px}.current-character span{display:none}.info-card,.countdown-card{padding:6px}.journey-box{padding:6px}.map-bottom .route-stops{display:none}}
+@media(max-width:680px){.shell{padding:5px;height:100dvh}.experience{grid-template-columns:minmax(0,1fr) 116px;grid-template-rows:minmax(0,1fr);gap:4px}.current-character{position:absolute;top:9px;left:47%;z-index:2;flex-direction:row;padding:3px 7px;border-radius:12px;max-width:130px;gap:4px}.current-character img{width:29px;height:32px}.current-character small,.current-character span{display:none}.current-character strong{font-size:10px}.map-wrap{grid-column:1;grid-row:1}.info-panel{grid-column:2;grid-row:1;display:flex;gap:5px}.map-stage{min-height:0}.map-bottom .route-stops,.map-bottom .next-stop,.map-bottom .travel-meter{display:none}.story-card p{display:none}.story-card strong{font-size:11px}.story-card>span{font-size:15px}.kid-actions{flex-wrap:wrap}.kid-actions button{font-size:10px;padding:5px}.info-line{display:block;text-align:center}.info-icon{display:none}.info-line strong{font-size:11px}.journey-heading{font-size:12px}.journey-box p{font-size:10px}.countdown{font-size:12px}.countdown-title{font-size:13px}.footer-banner{font-size:11px;padding:5px}.topbar h1{font-size:22px}.gear{font-size:12px;padding:5px}.map-stage svg{pointer-events:none}}
+@media(max-height:570px){.current-character img{max-height:70px}.info-line:nth-child(2){display:none}.journey-box p{display:none}.footer-banner{display:none}.map-bottom .route-stops,.map-bottom .next-stop,.map-bottom .travel-meter{display:none}}
+@media(prefers-reduced-motion:reduce){.current-character img,#travelerMotion.little-surprise{animation:none!important}}
+
+/* Animatieframes 2.7: behoud de getekende beweging, vermijd dubbele heftige wiebel. */
+#travelerMotion{animation-duration:2.8s!important}
+.current-character img{object-fit:contain}
+
+/* 3.0: sprookjeswereld met gelaagde animaties, op één scherm */
+.map-stage{isolation:isolate;position:relative;overflow:hidden;box-shadow:inset 0 0 55px #c6b4ff45,0 0 24px #74c9ff35;border-radius:22px}
+#worldCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;mix-blend-mode:screen}
+.enchanted-haze{position:absolute;inset:0;pointer-events:none;z-index:1;background:radial-gradient(ellipse at 32% 38%,#f4d9ff16,transparent 42%),radial-gradient(ellipse at 70% 78%,#ffe5a81c,transparent 43%);animation:hazeBreath 8s ease-in-out infinite alternate}
+@keyframes hazeBreath{from{opacity:.35;filter:hue-rotate(0)}to{opacity:.85;filter:hue-rotate(18deg)}}
+#heroFigure{filter:drop-shadow(0 7px 8px #07163d) drop-shadow(0 0 16px #ffe8a8);animation:heroFly3 2.7s ease-in-out infinite;transform-origin:center 75%;will-change:transform}
+@keyframes heroFly3{0%,100%{transform:translateY(0) rotate(-2deg) scale(1)}35%{transform:translateY(-11px) rotate(2deg) scale(1.035)}70%{transform:translateY(-5px) rotate(-1deg) scale(.99)}}
+#travelerMotion{filter:drop-shadow(0 0 14px #ffdf80);will-change:transform}
+body[data-character="fee"] #heroFigure{animation-duration:1.65s}
+body[data-character="paas"] #heroFigure{animation-name:bunnyHop3;animation-duration:1.05s}
+body[data-character="kabouter"] #heroFigure{animation-duration:1.3s}
+body[data-character="kerst"] #heroFigure{animation-duration:3.4s}
+@keyframes bunnyHop3{0%,100%{transform:translateY(0) scale(1,.98)}50%{transform:translateY(-19px) scale(1.04,1.02)}}
+#travelTrail{stroke-dasharray:4 17;animation:travelLights3 1.1s linear infinite;filter:drop-shadow(0 0 5px #fff4b0)}
+#futureTrail{stroke-dasharray:2 22;animation:travelLights3 2s linear infinite}
+@keyframes travelLights3{to{stroke-dashoffset:-42}}
+#homeHalo{animation:homePulse3 2.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes homePulse3{50%{opacity:.72;transform:scale(1.3)}}
+.current-character img{filter:drop-shadow(0 0 15px #ffe3a0) drop-shadow(0 8px 7px #031637)}
+.map-note{font-size:11px;text-align:center;color:#cde8ff;line-height:1.1;max-height:16px;overflow:hidden}
+#mapNote:empty{display:none}
+@media(max-height:680px){.map-note{display:none}.story-card p{display:none}.route-stops{display:none}}
+@media(max-width:680px){.map-note{display:none}.current-character{left:38%;max-width:118px}}
+@media(prefers-reduced-motion:reduce){.enchanted-haze,#heroFigure,#travelTrail,#futureTrail,#homeHalo{animation:none!important}}

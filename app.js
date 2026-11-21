@@ -24,6 +24,12 @@ const adventures={
  kabouter:{icon:'🍄',rest:'De kabouters rusten even onder een paddenstoel.',travel:'De kabouters wandelen vrolijk verder.',arrival:'De kabouters zijn aangekomen!'},
  kerst:{icon:'🦌',rest:'De rendieren krijgen even een worteltje.',travel:'De kerstman vliegt met zijn rendieren verder!',arrival:'De kerstman is aangekomen!'}
 };
+function updateSelectedCharacter(){
+ const t=themes[settings.theme]||themes.sint;
+ $('selectedCharacter').src='anim-'+settings.theme+'-0.png';
+ $('selectedCharacter').alt=t.name;
+ $('selectedCharacterName').textContent=t.name;
+}
 function previewJourneyProgress(t){
  // Korte pauze bij elke halte: het figuur blijft even staan voor een verrassing.
  const stages=5,stage=Math.min(stages-1,Math.floor(t*stages)),part=t*stages-stage;
@@ -104,7 +110,7 @@ const distances={ver:{label:'Nog ver weg',headline:'Er is iets magisch onderweg!
 function sentenceWho(t){return t.who.charAt(0).toUpperCase()+t.who.slice(1)}
 function verb(t,singular,plural){return t.plural?plural:singular}
 function themeIcon(t){return t.icon}
-function render(){setAdventureMode();updateMap();const t=themes[settings.theme]||themes.sint;const d=distances[settings.distance]||distances.buurt;document.querySelectorAll('[data-theme]').forEach(b=>{b.classList.toggle('selected',b.dataset.theme===settings.theme);b.setAttribute('aria-current',b.dataset.theme===settings.theme?'true':'false')});$('blip').replaceChildren();const mini=document.createElement('img');mini.src='figuur-'+settings.theme+'.png';mini.alt='';$('blip').append(mini);$('blip').style.left=d.position[0]+'%';$('blip').style.top=d.position[1]+'%';$('distance').textContent='● '+d.label;$('headline').textContent=d.headline;$('message').textContent=settings.message.trim()||`${sentenceWho(t)}: ${d.description}`;updateCountdown()}
+function render(){setAdventureMode();updateMap();const t=themes[settings.theme]||themes.sint;const d=distances[settings.distance]||distances.buurt;document.querySelectorAll('[data-theme]').forEach(b=>{b.classList.toggle('selected',b.dataset.theme===settings.theme);b.setAttribute('aria-current',b.dataset.theme===settings.theme?'true':'false')});$('distance').textContent='● '+d.label;$('headline').textContent=d.headline;$('message').textContent=settings.message.trim()||`${sentenceWho(t)}: ${d.description}`;updateCountdown()}
 // Thema wisselen kan alleen via het ouderportaal.
 function updateCountdown(){
  const el=$('countdown');
@@ -116,12 +122,12 @@ function updateCountdown(){
  const parts=[['Dagen',days],['Uren',hours],['Minuten',minutes],['Seconden',seconds]];
  el.replaceChildren(...parts.map(([label,value])=>{const box=document.createElement('span');box.className='time-unit';const number=document.createElement('strong');number.textContent=String(value).padStart(2,'0');const caption=document.createElement('small');caption.textContent=label;box.append(number,caption);return box}));
 }
-$('scan').addEventListener('click',()=>{const radar=$('radar');radar.animate([{filter:'brightness(1)'},{filter:'brightness(1.6)'},{filter:'brightness(1)'}],{duration:1100});$('scan').textContent='✨ Signaal gevonden!';setTimeout(()=>$('scan').textContent='📡 Zoek opnieuw naar signalen',1500)});
+$('scan').addEventListener('click',()=>{$('mapCamera').animate([{filter:'brightness(1)'},{filter:'brightness(1.2)'},{filter:'brightness(1)'}],{duration:1100});$('scan').textContent='✨ Signaal gevonden!';setTimeout(()=>$('scan').textContent='📡 Zoek opnieuw naar signalen',1500)});
 $('openParent').addEventListener('click',()=>{if(previewActive)stopPreview();$('pinInput').value='';$('authError').textContent='';$('authDialog').showModal()});
 $('cancelAuth').addEventListener('click',()=>$('authDialog').close());
 $('authForm').addEventListener('submit',e=>{e.preventDefault();if($('pinInput').value!==String(settings.pin)){$('authError').textContent='Deze code klopt niet.';return}$('authDialog').close();$('parentTheme').value=settings.theme;$('parentDistance').value=settings.distance;$('parentMagic').value=settings.magic||'spannend';$('parentDate').value=settings.date;$('parentPostcode').value=settings.postcode||'';$('parentCity').value=settings.city||'';$('parentMessage').value=settings.message;$('parentPin').value='';$('locationStatus').textContent='Klik op de knop om een punt op de kaart te kiezen.';$('parentDialog').showModal()});
 $('closeParent').addEventListener('click',()=>$('parentDialog').close());
-$('saveParent').addEventListener('click',async()=>{const pin=$('parentPin').value.trim();if(pin&&(!/^\d{4,12}$/.test(pin))){alert('Gebruik 4 tot 12 cijfers voor de oudercode.');return}settings={...settings,theme:$('parentTheme').value,distance:$('parentDistance').value,magic:$('parentMagic').value,date:$('parentDate').value,postcode:$('parentPostcode').value.replace(/\s/g,'').toUpperCase(),city:$('parentCity').value.trim().slice(0,55),message:$('parentMessage').value.trim(),pin:pin||settings.pin};if(settings.postcode.slice(0,4)!==settings.geoPostcode){settings.mapPoint=null;settings.geoPostcode='';settings.manualPoint=false};try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{alert('Opslaan op dit apparaat is niet gelukt. Controleer de browserinstellingen.')}render();$('parentDialog').close();await lookupPostcode();});
+$('saveParent').addEventListener('click',async()=>{const pin=$('parentPin').value.trim();if(pin&&(!/^\d{4,12}$/.test(pin))){alert('Gebruik 4 tot 12 cijfers voor de oudercode.');return}settings={...settings,theme:$('parentTheme').value,distance:$('parentDistance').value,magic:$('parentMagic').value,date:$('parentDate').value,postcode:$('parentPostcode').value.replace(/\s/g,'').toUpperCase(),city:$('parentCity').value.trim().slice(0,55),message:$('parentMessage').value.trim(),pin:pin||settings.pin};if(settings.postcode.slice(0,4)!==settings.geoPostcode){settings.mapPoint=null;settings.geoPostcode='';settings.manualPoint=false};try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{alert('Opslaan op dit apparaat is niet gelukt. Controleer de browserinstellingen.')}render();updateSelectedCharacter();$('parentDialog').close();await lookupPostcode();});
 
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 
@@ -202,7 +208,7 @@ function updateMap(overrideProgress=null){
  const [x,y]=pointOnCurve(route[segment].xy,route[segment+1].xy,part);
  const t=themes[settings.theme]||themes.sint;
  moveCamera(x,y,progress);updateStory(route,scaled,progress,overrideProgress!==null);
- $('travelerMotion').setAttribute('class','travel-motion motion-'+settings.theme+(progress>=1?' motion-arrived':''));$('traveler').setAttribute('href','figuur-'+settings.theme+'.png');const tw=settings.theme==='kerst'?185:settings.theme==='sint'?153:123;const th=tw*.95;$('traveler').setAttribute('width',tw);$('traveler').setAttribute('height',th);$('traveler').setAttribute('x',x-tw/2);$('traveler').setAttribute('y',y-th*.82);$('heroFigure').src='figuur-'+settings.theme+'.png';$('heroFigure').alt=t.name;
+ $('travelerMotion').setAttribute('class','travel-motion motion-'+settings.theme+(progress>=1?' motion-arrived':''));const tw=settings.theme==='kerst'?185:settings.theme==='sint'?153:123;const th=tw*.95;$('traveler').setAttribute('width',tw);$('traveler').setAttribute('height',th);$('traveler').setAttribute('x',x-tw/2);$('traveler').setAttribute('y',y-th*.82);$('heroFigure').alt=t.name;
  const [dx,dy]=dest.point;
  $('homeMarker').setAttribute('x',dx);$('homeMarker').setAttribute('y',dy+20);
  $('homeHalo').setAttribute('cx',dx);$('homeHalo').setAttribute('cy',dy);
@@ -395,4 +401,71 @@ function drawStops(route,visited){
  });
 }
 
-render();lookupPostcode();setInterval(()=>{updateCountdown();if(!previewActive)updateMap()},1000);
+render();updateSelectedCharacter();lookupPostcode();setInterval(()=>{updateCountdown();if(!previewActive)updateMap()},1000);
+
+// 2.6: rechtstreeks op de reiziger tikken. Automatische korte verrassingen.
+$('travelerMotion').style.pointerEvents='bounding-box';
+$('travelerMotion').style.cursor='pointer';
+$('travelerMotion').addEventListener('click',()=>characterReaction('wave'));
+let nextLittleMoment=Date.now()+17000;
+setInterval(()=>{
+ if(document.hidden||previewActive||settings.magic==='rustig'||$('parentDialog').open||$('authDialog').open)return;
+ if(Date.now()<nextLittleMoment)return;
+ nextLittleMoment=Date.now()+18000+Math.random()*16000;
+ const a=adventures[settings.theme]||adventures.sint;
+ $('storyTitle').textContent='Kijk eens! Er gebeurt iets!';
+ $('storyDescription').textContent=a.rest;
+ $('travelerMotion').classList.remove('little-surprise');
+ void $('travelerMotion').getBoundingClientRect();
+ $('travelerMotion').classList.add('little-surprise');
+ if(settings.magic==='extra')burstMagic(12);
+ setTimeout(()=>{$('travelerMotion').classList.remove('little-surprise')},2200);
+},3500);
+
+// MagischeRadar 2.7: echte opeenvolgende getekende animatiebeelden.
+// Animaties stoppen wanneer de gebruiker minder beweging heeft ingesteld.
+(function(){
+  let frame=0;
+  const themes=['sint','fee','paas','kabouter','kerst'];
+  setInterval(()=>{
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.hidden)return;
+    const theme=(typeof settings!=='undefined' && settings.theme)||'sint';
+    if(!themes.includes(theme))return;
+    frame=(frame+1)%4;
+    const src='anim-'+theme+'-'+frame+'.png';
+    const traveler=document.getElementById('traveler');
+    const selected=document.getElementById('selectedCharacter');
+    const hero=document.getElementById('heroFigure');
+    if(traveler)traveler.setAttribute('href',src);
+    if(selected)selected.src=src;
+    if(hero)hero.src=src;
+  },240);
+})();
+
+// MagischeRadar 3.0: doorlopende geanimeerde sprookjeswereld, volledig lokaal.
+// Canvas is alleen decoratief; ouderinstellingen en kaartlogica blijven in app.js.
+(function enchantedWorld(){
+ const canvas=document.getElementById('worldCanvas');
+ const stage=canvas.closest('.map-stage');
+ const ctx=canvas.getContext('2d',{alpha:true});
+ if(!ctx)return;
+ const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+ const stars=Array.from({length:74},(_,i)=>({x:(i*0.61803398875)%1,y:(i*0.41421356237)%1,r:0.7+(i%5)*.36,phase:i*1.8}));
+ const clouds=Array.from({length:5},(_,i)=>({x:i/4.3,y:.12+i*.17,s:.6+(i%3)*.32,speed:.000006+(i%3)*.000003}));
+ const motes=Array.from({length:24},(_,i)=>({x:(i*.381966)%1,y:(i*.754877)%1,phase:i*1.7}));
+ let w=0,h=0,dpr=1,previous=0;
+ function resize(){const b=stage.getBoundingClientRect();w=Math.max(1,b.width);h=Math.max(1,b.height);dpr=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}
+ if('ResizeObserver' in window)new ResizeObserver(resize).observe(stage);
+ window.addEventListener('resize',resize);resize();
+ function draw(t){requestAnimationFrame(draw);if(document.hidden||reduced.matches){ctx.clearRect(0,0,w,h);return}if(t-previous<30)return;previous=t;
+ ctx.clearRect(0,0,w,h);
+ // Mistflarden en wolken met zeer zachte randen.
+ clouds.forEach((c,i)=>{const x=((c.x+t*c.speed)%1.35-.17)*w,y=c.y*h+Math.sin(t*.00022+i)*h*.016;ctx.save();ctx.translate(x,y);ctx.scale(c.s,1);const g=ctx.createRadialGradient(0,0,2,0,0,w*.19);g.addColorStop(0,'rgba(205,224,255,.14)');g.addColorStop(1,'rgba(205,224,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(0,0,w*.2,h*.065,0,0,Math.PI*2);ctx.fill();ctx.restore()});
+ const intensity=settings.magic==='rustig'?.38:settings.magic==='extra'?1.2:.8;
+ stars.forEach((s,i)=>{const alpha=(.18+.45*(.5+.5*Math.sin(t*.0015+s.phase)))*intensity;const x=s.x*w,y=s.y*h;ctx.fillStyle=`rgba(255,244,194,${Math.min(.85,alpha)})`;ctx.beginPath();ctx.arc(x,y,s.r,0,Math.PI*2);ctx.fill();if(i%9===0){ctx.strokeStyle=`rgba(255,244,194,${alpha*.55})`;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x-5,y);ctx.lineTo(x+5,y);ctx.moveTo(x,y-5);ctx.lineTo(x,y+5);ctx.stroke()}});
+ motes.forEach(m=>{const x=(m.x*w+Math.sin(t*.0008+m.phase)*13),y=((m.y-(t*.000003)%1+1)%1)*h;const r=1.4+Math.sin(t*.002+m.phase)*.6;ctx.fillStyle=`rgba(255,221,116,${.12+intensity*.27})`;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()});
+ }
+ requestAnimationFrame(draw);
+ // Figuren reageren visueel op het gekozen thema zonder het kind een themakeuze te geven.
+ let lastTheme='';function sync(){const theme=settings.theme||'sint';if(lastTheme!==theme){lastTheme=theme;document.body.dataset.character=theme}requestAnimationFrame(sync)}sync();
+})();

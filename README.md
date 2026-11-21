@@ -1,11 +1,12 @@
-# MagischeRadar 2.5
+# MagischeRadar 3.0
 
-Nieuw: vuurwerk bij aankomst, feestbanner, zwaaiknop, magische verrassingsknop en een 10 seconden durende aankomsttest in het ouderportaal. Alle bestaande instellingen en thema’s blijven behouden.
+Sprookjesachtige 2D-Nederlandkaart met doorlopende canvas-animaties, zachte bewegende wolken, fonkelende sterren, zwevende lichtjes, geanimeerde routes en 3D-achtig geïllustreerde figuren met vier getekende houdingen per thema.
 
-## Installatie
-Upload alle bestanden in deze map naar de hoofdmap van je bestaande GitHub Pages-repository. Vervang de oude bestanden en vernieuw de pagina met Ctrl+F5.
+## Installeren
+Pak de ZIP uit en upload alle bestanden naar de hoofdmap van je GitHub Pages repository. Vervang de oude bestanden. Vernieuw daarna de website.
 
-## Testen
-Open Ouders, log in en kies ‘Bekijk aankomstfeest (10 seconden)’. Of start de voorbeeldreis van 30 seconden. Kinderen kunnen op ‘Zwaai’ en ‘Magische verrassing’ drukken.
+## Ouders
+Klik op Ouders, voer de ingestelde PIN in (standaard 2468), kies figuur, reisintensiteit, postcode/woonplaats, aankomsttijd en eventueel een boodschap. De instellingen blijven lokaal opgeslagen. De voorbeeldreis duurt 30 seconden; het aankomstfeest heeft een aparte testknop.
 
-De effecten zijn fictief en geluidloos. Bij ‘Rustige reis’ of een systeemvoorkeur voor minder beweging worden vuurwerkeffecten uitgeschakeld.
+## Belangrijk
+De figuren gebruiken vier getekende animatieframes met 3D-achtige belichting. Het zijn geen echte 3D-modellen of skeletanimaties. De kaart is een fantasiekaart en postcodeposities zijn benaderingen. Op kleine schermen is de ouderdialoog apart scrollbaar; het kinderscherm zelf is één scherm. Respecteer de instelling 'minder beweging' van het apparaat.
