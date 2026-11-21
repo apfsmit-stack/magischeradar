@@ -1,12 +1,26 @@
-# MagischeRadar 3.0
+# MagischeRadar 4.0 | De levende tekenfilmwereld
 
-Sprookjesachtige 2D-Nederlandkaart met doorlopende canvas-animaties, zachte bewegende wolken, fonkelende sterren, zwevende lichtjes, geanimeerde routes en 3D-achtig geïllustreerde figuren met vier getekende houdingen per thema.
+Deze versie bouwt voort op 3.3 en behoudt het ouderportaal, oudercode, vijf figuren, postcode- en locatie-instellingen, aankomsttijd, persoonlijke boodschap, 30-secondenvoorbeeld en aankomstfeest.
 
-## Installeren
-Pak de ZIP uit en upload alle bestanden naar de hoofdmap van je GitHub Pages repository. Vervang de oude bestanden. Vernieuw daarna de website.
+## Nieuwe animatiewereld
 
-## Ouders
-Klik op Ouders, voer de ingestelde PIN in (standaard 2468), kies figuur, reisintensiteit, postcode/woonplaats, aankomsttijd en eventueel een boodschap. De instellingen blijven lokaal opgeslagen. De voorbeeldreis duurt 30 seconden; het aankomstfeest heeft een aparte testknop.
+- Realtime geanimeerde wolken en mist, twinkelende lichtjes, bewegende bomen en draaiende windmolens.
+- Verlichte huisjes en vuurvliegjes, vallende sterren en een goudkleurig lichtspoor bij het reizende figuur.
+- Reacties met sterren en confetti wanneer een kind zwaait of een verrassing activeert.
+- Extra effecten bij tussenstops tijdens de voorbeeldreis en bij aankomst.
+- Animatie-intensiteit volgt de instelling Rustig, Spannend of Extra magisch.
+- Houdt rekening met `prefers-reduced-motion`.
+- De animatie is realtime en reageert op instellingen. Het is geen vooraf gerenderde animatiefilm.
+- De gestileerde 3D-personages uit 3.3 blijven optioneel beschikbaar via Three.js CDN. Als die niet laadt, zijn de geanimeerde 2D-figuren zichtbaar.
 
-## Belangrijk
-De figuren gebruiken vier getekende animatieframes met 3D-achtige belichting. Het zijn geen echte 3D-modellen of skeletanimaties. De kaart is een fantasiekaart en postcodeposities zijn benaderingen. Op kleine schermen is de ouderdialoog apart scrollbaar; het kinderscherm zelf is één scherm. Respecteer de instelling 'minder beweging' van het apparaat.
+## Publiceren
+
+Pak de ZIP uit en upload **alle bestanden uit de ZIP** naar de root van de bestaande GitHub Pages-repository. Overschrijf de oudere bestanden. Ververs na publicatie de site met Ctrl+F5. De serviceworker-cache is bijgewerkt naar 4.0.
+
+## Privacy
+
+Instellingen worden lokaal in de browser bewaard. De standaardoudercode is 2468 en moet bij eerste gebruik gewijzigd worden. Dit is een eenvoudige afscherming, geen veilige authenticatie.
+
+## Techniek
+
+Statische HTML/CSS/JavaScript, 2D Canvas, SVG en optionele Three.js. Geen server nodig. `cinema.js` verzorgt de animatiewereld. De bestaande `app.js` regelt de route en de ouderbediening.

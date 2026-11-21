@@ -57,23 +57,25 @@ function updateStory(route,scaled,progress,preview){
 const fireCanvas=$('fireworksCanvas'),fireCtx=fireCanvas.getContext('2d');
 let fireParticles=[],fireFrame=0,fireUntil=0,fireLast=0,fireShow=false;
 const fireColors=['#ffe87d','#ff8dd9','#80f8ff','#8dffbd','#ffffff','#ffb16b'];
-function stopFireworks(){fireShow=false;fireParticles=[];cancelAnimationFrame(fireFrame);fireCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);$('arrivalToast').classList.remove('visible')}
+function stopFireworks(){$('arrivalConfetti').classList.remove('active');fireShow=false;fireParticles=[];cancelAnimationFrame(fireFrame);fireCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);$('arrivalToast').classList.remove('visible')}
 function launchFireworks(arrival=false){
- if(settings.magic==='rustig'||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ if(arrival){$('arrivalConfetti').classList.remove('active');void $('arrivalConfetti').offsetWidth;$('arrivalConfetti').classList.add('active');}
+ if(settings.magic==='rustig')return;
  const rect=fireCanvas.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);
  fireCanvas.width=Math.max(1,Math.round(rect.width*dpr));fireCanvas.height=Math.max(1,Math.round(rect.height*dpr));fireCtx.setTransform(dpr,0,0,dpr,0,0);
- fireShow=true;fireUntil=performance.now()+(arrival?8000:2600);fireLast=0;
+ fireShow=true;fireUntil=performance.now()+(arrival?10500:2600);fireLast=0;
  if(arrival){$('arrivalToast').textContent='🎉 Hoera! Het magische bezoek is aangekomen! 🎉';$('arrivalToast').classList.add('visible')}
  cancelAnimationFrame(fireFrame);fireFrame=requestAnimationFrame(animateFireworks);
 }
 function explodeFire(x,y,n){for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.18,speed=1.5+Math.random()*3.8;fireParticles.push({x,y,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:1,color:fireColors[Math.floor(Math.random()*fireColors.length)],r:1.8+Math.random()*2.7})}}
 function animateFireworks(now){if(!fireShow)return;const w=fireCanvas.clientWidth,h=fireCanvas.clientHeight;fireCtx.clearRect(0,0,w,h);
- if(now<fireUntil&&now-fireLast>(settings.magic==='extra'?350:650)){fireLast=now;explodeFire(w*(.17+Math.random()*.66),h*(.12+Math.random()*.55),settings.magic==='extra'?58:34)}
+ if(now<fireUntil&&now-fireLast>(settings.magic==='extra'?190:380)){fireLast=now;explodeFire(w*(.17+Math.random()*.66),h*(.12+Math.random()*.55),settings.magic==='extra'?94:58)}
  fireParticles=fireParticles.filter(q=>q.life>0);for(const q of fireParticles){q.x+=q.vx;q.y+=q.vy;q.vy+=.045;q.vx*=.991;q.life-=.014;fireCtx.globalAlpha=Math.max(0,q.life);fireCtx.fillStyle=q.color;fireCtx.shadowColor=q.color;fireCtx.shadowBlur=12;fireCtx.beginPath();fireCtx.arc(q.x,q.y,q.r*Math.max(.25,q.life),0,Math.PI*2);fireCtx.fill()}fireCtx.globalAlpha=1;fireCtx.shadowBlur=0;
  if(now<fireUntil||fireParticles.length)fireFrame=requestAnimationFrame(animateFireworks);else stopFireworks();
 }
 let lastInteraction=0;
-function characterReaction(kind){if(Date.now()-lastInteraction<900)return;lastInteraction=Date.now();
+function characterReaction(kind){if(Date.now()-lastInteraction<900)return;lastInteraction=Date.now();window.dispatchEvent(new Event(kind==='wave'?'magischeradar:wave':'magischeradar:surprise'));
  const t=themes[settings.theme]||themes.sint,a=adventures[settings.theme]||adventures.sint;
  const msg=kind==='wave'?({sint:'Ozosnel hinnikt vrolijk terug!',fee:'De tandenfee zwaait met haar toverstaf!',paas:'De paashaas maakt een extra grote sprong!',kabouter:'De kabouter zwaait met zijn lantaarntje!',kerst:'De kerstman zwaait vanuit zijn slee!'})[settings.theme]:a.rest;
  $('storyTitle').textContent=kind==='wave'?'Er wordt teruggezwaaid!':'Een magische verrassing!';$('storyDescription').textContent=msg;
@@ -208,7 +210,7 @@ function updateMap(overrideProgress=null){
  const [x,y]=pointOnCurve(route[segment].xy,route[segment+1].xy,part);
  const t=themes[settings.theme]||themes.sint;
  moveCamera(x,y,progress);updateStory(route,scaled,progress,overrideProgress!==null);
- $('travelerMotion').setAttribute('class','travel-motion motion-'+settings.theme+(progress>=1?' motion-arrived':''));const tw=settings.theme==='kerst'?185:settings.theme==='sint'?153:123;const th=tw*.95;$('traveler').setAttribute('width',tw);$('traveler').setAttribute('height',th);$('traveler').setAttribute('x',x-tw/2);$('traveler').setAttribute('y',y-th*.82);$('heroFigure').alt=t.name;
+ $('travelerMotion').setAttribute('class','travel-motion motion-'+settings.theme+(progress>=1?' motion-arrived':''));const tw=settings.theme==='kerst'?290:settings.theme==='sint'?250:205;const th=tw*.90;$('traveler').setAttribute('width',tw);$('traveler').setAttribute('height',th);$('traveler').setAttribute('x',x-tw/2);$('traveler').setAttribute('y',y-th*.82);$('heroFigure').alt=t.name;
  const [dx,dy]=dest.point;
  $('homeMarker').setAttribute('x',dx);$('homeMarker').setAttribute('y',dy+20);
  $('homeHalo').setAttribute('cx',dx);$('homeHalo').setAttribute('cy',dy);
@@ -218,6 +220,7 @@ function updateMap(overrideProgress=null){
  const trail=routePath(visited)+(part>0?' '+partialCurve(route[segment].xy,route[segment+1].xy,part):'');
  const starPoints=visited.concat([[x,y]]);
  $('travelTrail').setAttribute('d',trail);$('travelTrailGlow').setAttribute('d',trail);const future=routePath(route.map(r=>r.xy));$('futureTrail').setAttribute('d',future);drawStops(route,progress*n);drawTravelStars(starPoints);
+ window.dispatchEvent(new CustomEvent('magischeradar:journey',{detail:{x,y,progress,theme:settings.theme,magic:settings.magic,preview:overrideProgress!==null,stop:route[segment].name}}));
  const stop=progress>=1?'Thuis':route[segment].name;
  const next=route[segment+1].name;
  const note=$('mapNote'),event=$('cityEvent');
@@ -226,9 +229,9 @@ function updateMap(overrideProgress=null){
  // Houd de woonplaatsnaam weg van bestaande stadslabels (vooral Amsterdam).
  const labelX=(dy<380&&dx>=550&&dx<850)?dx+80:(dx>1120?dx-105:dx<350?dx+105:dx+90);
  const labelY=(dy<380&&dx>=550&&dx<850)?dy-52:(dy<280?dy+100:dy>790?dy-82:dy+94);
- $('homeCity').setAttribute('x',Math.max(105,Math.min(1420,labelX)));
+ $('homeCity').setAttribute('x',Math.max(125,Math.min(1380,labelX)));
  $('homeCity').setAttribute('y',labelY);
- $('homeCity').setAttribute('font-size',dest.name.length>16?'26':'34');$('travelMeterText').textContent=(previewActive||overrideProgress!==null)?('Voorbeeldreis: '+Math.round(progress*100)+'% afgelegd') :Number.isFinite(end)?(progress>=1?'De magische reis is voltooid!':Math.round(progress*100)+'% van de reis afgelegd'):'De magische reis begint zodra de aankomsttijd is ingesteld';
+ $('homeCity').setAttribute('font-size',dest.name.length>16?'27':'39');$('travelMeterText').textContent=(previewActive||overrideProgress!==null)?('Voorbeeldreis: '+Math.round(progress*100)+'% afgelegd') :Number.isFinite(end)?(progress>=1?'De magische reis is voltooid!':Math.round(progress*100)+'% van de reis afgelegd'):'De magische reis begint zodra de aankomsttijd is ingesteld';
  if(previewActive||overrideProgress!==null){note.textContent='▶ Voorbeeldweergave: de echte reis loopt gewoon door';event.textContent=progress>=1?'🎉 Voorbeeld: aangekomen in '+homeName+'!':`${themeIcon(t)} ${sentenceWho(t)} ${verb(t,'reist','reizen')} via ${stop==='Vertrek'?'Groningen':stop} naar ${next==='Thuis'?homeName:next}!`;
  }else if(!dest.hasPostcode&&!dest.name){
    note.textContent='Vul een postcode en woonplaats in bij het ouderportaal.';
@@ -468,4 +471,16 @@ setInterval(()=>{
  requestAnimationFrame(draw);
  // Figuren reageren visueel op het gekozen thema zonder het kind een themakeuze te geven.
  let lastTheme='';function sync(){const theme=settings.theme||'sint';if(lastTheme!==theme){lastTheme=theme;document.body.dataset.character=theme}requestAnimationFrame(sync)}sync();
+})();
+
+// 3.1: tijdelijke verhalen op de kaart, in plaats van permanente tekstblokken eronder.
+(function compactStory(){
+ const stage=document.querySelector('.map-stage'),story=document.getElementById('storyCard');
+ if(!stage||!story)return;stage.appendChild(story);story.classList.add('floating-story');
+ const observer=new MutationObserver(()=>{story.classList.remove('story-pop');void story.offsetWidth;story.classList.add('story-pop')});
+ observer.observe(document.getElementById('storyTitle'),{childList:true,characterData:true,subtree:true});
+})();
+// 3.1: aankomstconfetti, onafhankelijk van de vuurwerktekening.
+(function addConfetti(){const el=document.getElementById('arrivalConfetti');if(!el)return;
+ for(let i=0;i<95;i++){const bit=document.createElement('i');bit.style.setProperty('--x',(i*73%100)+'%');bit.style.setProperty('--delay',((i*13)%70/30)+'s');bit.style.setProperty('--dur',(2.2+(i%7)*.3)+'s');bit.style.setProperty('--hue',((i*57)%360)+'');el.appendChild(bit)}
 })();
